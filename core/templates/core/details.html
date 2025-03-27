@@ -24,6 +24,115 @@
     </div>
 </div>
 
+
+
+<div class="container emp-profile">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="profile-img">
+                    <img src="{{ profile.image.url }}" alt="" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="profile-head">
+                    {% comment %} <h5>
+                        {{profile.first_name}} {{profile.last_name}}
+                    </h5> {% endcomment %}
+                    
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab"
+                                aria-controls="home" aria-selected="true">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab"
+                                aria-controls="profile" aria-selected="false">Timeline</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <a href=""><input type="button" class="profile-edit-btn" name="btnAddMore" value="Edit Profile" /></a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+
+            </div>
+            <div class="col-md-8">
+                <div class="profile-tab" id="myTabContent">
+                    <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>RUT</label>
+                            </div>
+                            <div class="col-md-6">
+                                <p id='Rut'>{{profile.rut}}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Nombre</label>
+                            </div>
+                            <div class="col-md-6">
+                                <p  id='Nombre'>{{profile.first_name}} {{profile.last_name}}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Email</label>
+                            </div>
+                            <div class="col-md-6">
+                                <p id='Email'>{{profile.email}}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Phone</label>
+                            </div>
+                            <div class="col-md-6">
+                                <p id='Phone'>{{profile.phone}}</h7>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Transportista</label>
+                            </div>
+                            <div class="col-md-6">
+                                <p id='Empresa'>{{ profile.Transportista }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-history" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col"> </th>
+                                    <th scope="col">Nombre del Rostro</th>
+                                    <th scope="col">Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for face in scanned %}
+                                <tr>
+                                    <th scope="row">-</th>
+                                    <td>{{ face.last_face }}</td>
+                                    <td>{{ face.date|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No hay registros en el historial.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+
 <script>
     
     const getCookie = (name) => {
@@ -82,11 +191,29 @@
                             processData: false,
                             contentType: false,
                             success: (resp) => {
-                                console.log(resp);
                                 if (resp.success) {
-                                    alert(`Rostro detectado: ${resp.faces.join(', ')}`); // Muestra los nombres de los usuarios detectados
+                                    // Actualiza la información del perfil
+                                    document.querySelector('.profile-img img').src = resp.profile.image_url;
+                                    document.querySelector('.profile-tab #Nombre').textContent = `${resp.profile.first_name} ${resp.profile.last_name}`;
+                                    document.querySelector('.profile-tab #Empresa').textContent = resp.profile.transportista;
+                                    document.querySelector('.profile-tab #Rut').textContent = resp.profile.rut;
+                                    document.querySelector('.profile-tab #Email').textContent = resp.profile.email;
+                                    document.querySelector('.profile-tab #Phone').textContent = `0${resp.profile.phone}`;
+
+                                    // Actualiza el historial
+                                    const historyTable = document.querySelector('.profile-history #profile tbody');
+                                    historyTable.innerHTML = ''; // Limpia el historial actual
+                                    resp.history.forEach(face => {
+                                        const row = `
+                                            <tr>
+                                                <td>${face.last_face}</td>
+                                                <td>${face.date}</td>
+                                            </tr>
+                                        `;
+                                        historyTable.innerHTML += row;
+                                    });
                                 } else {
-                                    alert('No se detectaron rostros o ocurrió un error.');
+                                    alert(resp.error || 'No se detectaron rostros.');
                                 }
                             },
                             error: (err) => {

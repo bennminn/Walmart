@@ -12,6 +12,8 @@ from django.core.files.base import ContentFile
 from django.contrib.auth.models import User
 from PIL import Image
 from django.contrib.auth import logout, login
+from django.contrib import messages
+from django.utils import timezone
 
 
 # def find_user_view(request):
@@ -68,11 +70,11 @@ sound = os.path.join(sound_folder, 'beep.wav')
 def index(request):
     scanned = LastFace.objects.all().order_by('date').reverse()
     present = Profile.objects.filter(present=True).order_by('updated').reverse()
-    absent = Profile.objects.filter(present=False).order_by('shift')
+    absent = Profile.objects.filter(present=False)
     context = {
         'scanned': scanned,
         'present': present,
-        'absent': absent,
+        'absent': absent
     }
     return render(request, 'core/index.html', context)
 
@@ -97,7 +99,7 @@ def scan(request):
             decoded_file = base64.b64decode(str_img)
 
             # Guardar la imagen temporalmente
-            temp_image_path = os.path.join(current_path, 'temp_image.png')
+            temp_image_path = os.path.join('temp_image.png')
             with open(temp_image_path, 'wb') as f:
                 f.write(decoded_file)
 
@@ -116,7 +118,7 @@ def scan(request):
                 image_of_person = face_recognition.load_image_file(f'media/{person}')
                 person_face_encoding = face_recognition.face_encodings(image_of_person)[0]
                 known_face_encodings.append(person_face_encoding)
-                known_face_names.append(profile.first_name + " " + profile.last_name)  # Usar el nombre completo del usuario
+                known_face_names.append(profile.first_name + " " + profile.last_name)
 
             face_names = []
             for face_encoding in face_encodings:
@@ -128,25 +130,36 @@ def scan(request):
                 if matches[best_match_index]:
                     name = known_face_names[best_match_index]
 
-                    # Actualizar el estado del perfil
+                    # Buscar el perfil correspondiente
                     profile = Profile.objects.get(
                         first_name=name.split()[0], last_name=name.split()[1]
                     )
+
+                    # Crear un registro en LastFace
+                    LastFace.objects.create(
+                        profile=profile,
+                        last_face=name,
+                        date=timezone.now()
+                    )
+
+                    # Actualizar el estado del perfil
                     profile.present = True
                     profile.save()
 
-                    # Guardar el último rostro detectado en el historial
-                    LastFace.objects.create(last_face=name)
+                    return JsonResponse({'success': True, 'profile': {
+                        'rut': profile.rut,
+                        'first_name': profile.first_name,
+                        'last_name': profile.last_name,
+                        'email': profile.email,
+                        'phone': profile.phone,
+                        'transportista': profile.Transportista,
+                        'image_url': profile.image.url,
+                    }})
 
-                face_names.append(name)
+            return JsonResponse({'success': False, 'error': 'No se detectaron coincidencias.'})
 
-            # Eliminar la imagen temporal
-            os.remove(temp_image_path)
-
-            return JsonResponse({'success': True, 'faces': face_names})
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Método de solicitud no válido'})
+            return JsonResponse({'success': False, 'error': f'Error inesperado: {str(e)}'})
 
 
 def profiles(request):
@@ -173,14 +186,19 @@ def details(request):
 
 
 def add_profile(request):
-    form = ProfileForm
     if request.method == 'POST':
-        form = ProfileForm(request.POST,request.FILES)
+        form = ProfileForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return redirect('profiles')
-    context={'form':form}
-    return render(request,'core/add_profile.html',context)
+            messages.success(request, 'El perfil se ha guardado correctamente.')
+            return redirect('profiles')  # Redirige a la lista de perfiles después de guardar
+        else:
+            messages.error(request, 'Hubo un error al guardar el perfil. Por favor, verifica los datos ingresados.')
+    else:
+        form = ProfileForm()
+    
+    context = {'form': form}
+    return render(request, 'core/add_profile.html', context)
 
 
 def edit_profile(request,id):

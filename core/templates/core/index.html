@@ -46,19 +46,22 @@
             <table class="table table-striped ">
                 <thead>
                     <tr>
-                        <th scope="col"> </th>
+                        <th scope="col">RUT</th>
                         <th scope="col">Nombre</th>
                         <th scope="col">Transportista</th>
                         <th scope="col">Hora</th>
+                        <th scope="col">Zona</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for profile in present %}
                     <tr>
-                        <th scope="row">-</th>
+                        {% comment %} <th scope="row">-</th> {% endcomment %}
+                        <td>{{profile.rut}}</td>
                         <td>{{profile.first_name}} {{profile.last_name}}</td>
-                        <td>{{profile.profession}}</td>
+                        <td>{{profile.Transportista}}</td>
                         <td>{{profile.updated |date:"h:iA"}}</td>
+                        <td>{{profile.status}}</td>
                     </tr>
                     {% endfor%}
                 </tbody>
@@ -73,18 +76,20 @@
                 <thead>
                     <tr>
                         <th scope="col"> </th>
+                        <th scope="col">Rut</th>
                         <th scope="col">Nombre</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">Turno</th>
+                        <th scope="col">Transportista</th>
+
                     </tr>
                 </thead>
                 <tbody>
-                    {% for profile in absent %}
+                    {% for profile in absent%}
                     <tr>
                         <th scope="row">-</th>
+                        <td>{{profile.rut}}</td>
                         <td>{{profile.first_name}} {{profile.last_name}}</td>
-                        <td>{{profile.profession}}</td>
-                        <td>{{profile.shift}}</td>
+                        <td>{{profile.Transportista}}</td>
+                        
                     </tr>
                     {% endfor%}
                 </tbody>
