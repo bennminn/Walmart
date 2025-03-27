@@ -1,0 +1,137 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container emp-profile">
+
+    <div class="row">
+        <div class="col-12 col-md-3 text-center">
+            <img src="{% static 'img/walmart.png' %}" alt="Logo" class="img-fluid" style="max-width: 50%;">
+            <h6 class="text-muted p-1">Registro de conductores</h6>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="profile-head">
+                <!-- Puedes agregar contenido aquí si es necesario -->
+            </div>
+        </div>
+        <div class="col-12 col-md-3 text-center">
+            <a target="_blank" class="scan" href="{% url 'details' %}">
+                <input type="submit" class="btn btn-primary btn-block m-2" name="btnAddMore" value="Registrar Conductor" />
+            </a>
+            <a href="{% url 'profiles' %}">
+                <input type="submit" class="btn btn-secondary btn-block m-2" name="btnAddMore" value="Editar Conductores" />
+            </a>
+        </div>
+    </div>
+    <hr>
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="present-tab" data-toggle="tab" href="#present" role="tab"
+                aria-controls="home" aria-selected="true">En Espera</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="absent-tab" data-toggle="tab" href="#absent" role="tab" aria-controls="profile"
+                aria-selected="false">Sin Escanear</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="history-tab" data-toggle="tab" href="#history" role="tab" aria-controls="contact"
+                aria-selected="false">Historial</a>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="myTabContent">
+        <br>
+        <div class="tab-pane fade show active" id="present" role="tabpanel" aria-labelledby="home-tab">
+
+            <table class="table table-striped ">
+                <thead>
+                    <tr>
+                        <th scope="col"> </th>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Transportista</th>
+                        <th scope="col">Hora</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for profile in present %}
+                    <tr>
+                        <th scope="row">-</th>
+                        <td>{{profile.first_name}} {{profile.last_name}}</td>
+                        <td>{{profile.profession}}</td>
+                        <td>{{profile.updated |date:"h:iA"}}</td>
+                    </tr>
+                    {% endfor%}
+                </tbody>
+            </table>
+            <a href="{% url 'reset' %}"><button type="button" class="btn btn-outline-secondary">Reiniciar</button></a>
+            <a href="{% url 'index' %}"><button type="button" class="btn btn-outline-primary">Actualizar</button></a>
+
+        </div>
+
+        <div class="tab-pane fade" id="absent" role="tabpanel" aria-labelledby="profile-tab">
+            <table class="table table-striped ">
+                <thead>
+                    <tr>
+                        <th scope="col"> </th>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Turno</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for profile in absent %}
+                    <tr>
+                        <th scope="row">-</th>
+                        <td>{{profile.first_name}} {{profile.last_name}}</td>
+                        <td>{{profile.profession}}</td>
+                        <td>{{profile.shift}}</td>
+                    </tr>
+                    {% endfor%}
+                </tbody>
+            </table>
+
+        </div>
+
+        <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="contact-tab">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col"> </th>
+                        <th scope="col">Nombre del Rostro</th>
+                        <th scope="col">Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for face in scanned %}
+                    <tr>
+                        <th scope="row">-</th>
+                        <td>{{ face.last_face }}</td>
+                        <td>{{ face.date|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center">No hay registros en el historial.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <a href="{% url 'clear_history' %}">
+                <button type="button" class="btn btn-outline-secondary">Limpiar Historial</button>
+            </a>
+        </div>
+    </div>
+
+</div>
+<script>
+    $(".scan").click(function () {
+        var postData = { csrfmiddlewaretoken: '{{ csrf_token }}' }
+        $.ajax({
+            url: "{% url 'scan' %}",
+            data: {
+
+            },
+        });
+    });
+</script>
+
+{% endblock content %}
