@@ -12,6 +12,7 @@ from django.core.files.base import ContentFile
 from django.contrib.auth.models import User
 from PIL import Image
 from django.contrib.auth import logout, login
+import logging
 
 
 # def find_user_view(request):
@@ -63,6 +64,11 @@ current_path = os.path.dirname(__file__)
 sound_folder = os.path.join(current_path, 'sound/')
 face_list_file = os.path.join(current_path, 'face_list.txt')
 sound = os.path.join(sound_folder, 'beep.wav')
+
+logger = logging.getLogger('face_attendance')
+logger.debug('This is a test debug message')
+logger.info('This is a test info message')
+logger.warn('This is a test warn message')
 
 
 def index(request):
@@ -196,8 +202,10 @@ def edit_profile(request,id):
 
 
 def delete_profile(request,id):
+    logger.warn(f'deleting profile with id: {id}')
     profile = Profile.objects.get(id=id)
     profile.delete()
+    logger.warn('profile succesfully deleted')
     return redirect('profiles')
 
 
