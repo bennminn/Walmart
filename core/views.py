@@ -2,7 +2,6 @@ from django.shortcuts import render, HttpResponse, redirect
 from .models import *
 from .forms import *
 import face_recognition
-import cv2
 import numpy as np
 import winsound
 from django.db.models import Q
