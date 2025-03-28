@@ -98,8 +98,8 @@ def scan(request):
         try:
             decoded_file = base64.b64decode(str_img)
 
-            # Guardar la imagen temporalmente
-            temp_image_path = os.path.join('temp_image.png')
+            # Guardar la imagen en la carpeta media
+            temp_image_path = os.path.join('media', 'temp_image.png')
             with open(temp_image_path, 'wb') as f:
                 f.write(decoded_file)
 
