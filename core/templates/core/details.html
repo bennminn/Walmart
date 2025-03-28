@@ -102,6 +102,14 @@
                                 <p id='Empresa'>{{ profile.Transportista }}</p>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Zona</label>
+                            </div>
+                            <div class="col-md-6">
+                                <p id='Status'>{{ profile.status }}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -189,7 +197,7 @@
                                     document.querySelector('.profile-tab #Rut').textContent = resp.profile.rut;
                                     document.querySelector('.profile-tab #Email').textContent = resp.profile.email;
                                     document.querySelector('.profile-tab #Phone').textContent = `0${resp.profile.phone}`;
-
+                                    document.querySelector('.profile-tab #Status').textContent = resp.profile.status;
                                     // Actualiza el historial
                                     const historyTable = document.querySelector('#profile tbody');
                                     historyTable.innerHTML = ''; // Limpia el historial actual

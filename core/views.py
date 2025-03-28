@@ -68,13 +68,16 @@ sound = os.path.join(sound_folder, 'beep.wav')
 
 
 def index(request):
-    scanned = LastFace.objects.all().order_by('date').reverse()
-    present = Profile.objects.filter(present=True).order_by('updated').reverse()
+    scanned = LastFace.objects.all().order_by('-date')
+    present = Profile.objects.filter(present=True).order_by('-updated')
     absent = Profile.objects.filter(present=False)
+    history = StatusChangeHistory.objects.all().order_by('-date')  # Historial de cambios
+
     context = {
         'scanned': scanned,
         'present': present,
-        'absent': absent
+        'absent': absent,
+        'history': history  # Agregar historial al contexto
     }
     return render(request, 'core/index.html', context)
 
@@ -135,16 +138,30 @@ def scan(request):
                         first_name=name.split()[0], last_name=name.split()[1]
                     )
 
+                    # Cambiar el status basado en el último viaje
+                    previous_status = profile.status
+                    if previous_status == 'Zona Cero':
+                        profile.status = 'RM'
+                    else:
+                        profile.status = 'Zona Cero'
+
+                    # Guardar el historial de cambios
+                    StatusChangeHistory.objects.create(
+                        profile=profile,
+                        previous_status=previous_status,
+                        new_status=profile.status
+                    )
+
+                    # Actualizar el estado del perfil
+                    profile.present = True
+                    profile.save()
+
                     # Crear un registro en LastFace
                     LastFace.objects.create(
                         profile=profile,
                         last_face=name,
                         date=timezone.now()
                     )
-
-                    # Actualizar el estado del perfil
-                    profile.present = True
-                    profile.save()
 
                     return JsonResponse({'success': True, 'profile': {
                         'rut': profile.rut,
@@ -154,6 +171,7 @@ def scan(request):
                         'phone': profile.phone,
                         'transportista': profile.Transportista,
                         'image_url': profile.image.url,
+                        'status': profile.status
                     }})
 
             return JsonResponse({'success': False, 'error': 'No se detectaron coincidencias.'})

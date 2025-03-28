@@ -66,7 +66,9 @@
                     {% endfor%}
                 </tbody>
             </table>
-            <a href="{% url 'reset' %}"><button type="button" class="btn btn-outline-secondary">Reiniciar</button></a>
+            <a href="{% url 'reset' %}" onclick="return confirm('¿Estás seguro de que deseas reiniciar?')">
+                <button type="button" class="btn btn-outline-secondary">Reiniciar</button>
+            </a>
             <a href="{% url 'index' %}"><button type="button" class="btn btn-outline-primary">Actualizar</button></a>
 
         </div>
@@ -98,10 +100,10 @@
         </div>
 
         <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="contact-tab">
+            <h5>Historial de Rostros Escaneados</h5>
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th scope="col"> </th>
                         <th scope="col">Nombre del Rostro</th>
                         <th scope="col">Fecha</th>
                     </tr>
@@ -109,18 +111,45 @@
                 <tbody>
                     {% for face in scanned %}
                     <tr>
-                        <th scope="row">-</th>
                         <td>{{ face.last_face }}</td>
                         <td>{{ face.date|date:"d/m/Y H:i" }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="3" class="text-center">No hay registros en el historial.</td>
+                        <td colspan="2" class="text-center">No hay registros en el historial.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            <a href="{% url 'clear_history' %}">
+
+            <h5>Historial de Cambios de Estado</h5>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">RUN</th>
+                        <th scope="col">Zona Anterior</th>
+                        <th scope="col">Nueva Zona</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for change in history %}
+                    <tr>
+                        <td>{{ change.date|date:"d/m/Y H:i" }}</td>
+                        <td>{{ change.profile.first_name }} {{ change.profile.last_name }}</td>
+                        <td>{{ change.profile.rut }}</td>
+                        <td>{{ change.previous_status }}</td>
+                        <td>{{ change.new_status }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No hay cambios registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <a href="{% url 'clear_history' %}" onclick="return confirm('¿Estás seguro de que deseas limpiar el historial?')">
                 <button type="button" class="btn btn-outline-secondary">Limpiar Historial</button>
             </a>
         </div>

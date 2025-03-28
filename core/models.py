@@ -30,3 +30,13 @@ class LastFace(models.Model):
     def __str__(self):
         return self.last_face
 
+
+class StatusChangeHistory(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='status_changes')
+    previous_status = models.CharField(max_length=20)
+    new_status = models.CharField(max_length=20)
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.profile.first_name} {self.profile.last_name}: {self.previous_status} -> {self.new_status}"
+
