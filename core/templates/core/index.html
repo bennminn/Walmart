@@ -46,33 +46,68 @@
         <br>
         <div class="tab-pane fade show active" id="present" role="tabpanel" aria-labelledby="home-tab">
 
-            <table class="table table-striped ">
+            <div class="row">
+            <div class="col-md-6">
+                <h5>En espera</h5>
+                <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th scope="col">RUT</th>
-                        <th scope="col">Nombre</th>
-                        <th scope="col">Transportista</th>
-                        <th scope="col">Hora</th>
-                        <th scope="col">Zona</th>
+                    <th scope="col">RUT</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Transportista</th>
+                    <th scope="col">Hora</th>
+                    <th scope="col">Zona</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for profile in present %}
                     <tr>
-                        {% comment %} <th scope="row">-</th> {% endcomment %}
-                        <td>{{profile.rut}}</td>
-                        <td>{{profile.first_name}} {{profile.last_name}}</td>
-                        <td>{{profile.Transportista}}</td>
-                        <td>{{profile.updated |date:"h:iA"}}</td>
-                        <td>{{profile.status}}</td>
+                    <td>{{profile.rut}}</td>
+                    <td>{{profile.first_name}} {{profile.last_name}}</td>
+                    <td>{{profile.Transportista}}</td>
+                    <td>{{profile.updated |date:"h:iA"}}</td>
+                    <td>{{profile.status}}</td>
                     </tr>
-                    {% endfor%}
+                    {% endfor %}
                 </tbody>
-            </table>
+                </table>
+            </div>
+
+            <div class="col-md-6">
+                <h5>Asignado</h5>
+                <table class="table table-striped">
+                <thead>
+                    <tr>
+                    <th scope="col">RUT</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Transportista</th>
+                    <th scope="col">Hora</th>
+                    <th scope="col">Zona</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for profile in present %}
+                    <tr>
+                    <td>{{profile.rut}}</td>
+                    <td>{{profile.first_name}} {{profile.last_name}}</td>
+                    <td>{{profile.Transportista}}</td>
+                    <td>{{profile.updated |date:"h:iA"}}</td>
+                    <td>{{profile.status}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                </table>
+            </div>
+            </div>
+
+            <div class="mt-3">
             <a href="{% url 'reset' %}" onclick="return confirm('¿Estás seguro de que deseas reiniciar?')">
                 <button type="button" class="btn btn-outline-secondary">Reiniciar</button>
             </a>
-            <a href="{% url 'index' %}"><button type="button" class="btn btn-outline-primary">Actualizar</button></a>
+            <a href="{% url 'index' %}">
+                <button type="button" class="btn btn-outline-primary">Actualizar</button>
+            </a>
+            </div>
 
         </div>
 
