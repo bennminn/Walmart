@@ -11,7 +11,7 @@ import base64
 from django.core.files.base import ContentFile
 from django.contrib.auth.models import User
 from PIL import Image
-from django.contrib.auth import logout, login
+from django.contrib.auth import logout, login, authenticate
 from django.contrib import messages
 from django.utils import timezone
 
@@ -66,6 +66,29 @@ sound_folder = os.path.join(current_path, 'sound/')
 face_list_file = os.path.join(current_path, 'face_list.txt')
 sound = os.path.join(sound_folder, 'beep.wav')
 
+def login_succes(request):
+    data = {"mesg": "", "form": LoginForm()}
+    username = request.GET.get('username', '')
+    if request.method == "POST":
+        form = LoginForm(request.POST)
+        if form.is_valid:
+            username = request.POST.get("username")
+            password = request.POST.get("password")
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    messages.success(request, "Inició sesión correctamente :)")
+                    return redirect(to='index')
+                else:
+                    data["mesg"] = "¡Nombre de usuario o contraseña no son correctos!"
+            else:
+                data["mesg"] = "¡Nombre de usuario o contraseña no son correctos!"
+    return render(request, 'core/login.html', {'username': username})
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
 
 def index(request):
     scanned = LastFace.objects.all().order_by('-date')
