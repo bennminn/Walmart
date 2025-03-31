@@ -27,3 +27,10 @@ class LastFace(models.Model):
     def __str__(self):
         return self.last_face
 
+
+class Trips(models.Model):
+    name = models.CharField(max_length=200)
+    date = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return self.Trips
+

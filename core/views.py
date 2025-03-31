@@ -95,7 +95,9 @@ def scan(request):
     if request.method == 'POST':
         photo = request.POST.get('photo')
         if not photo.startswith('data:image/'):
-            return JsonResponse({'success': False, 'error': 'Formato de imagen no válido'})
+            msg = 'Formato de imagen no válido'
+            logger.warn(msg)
+            return JsonResponse({'success': False, 'error': msg})
 
         _, str_img = photo.split(';base64')
 
@@ -224,3 +226,8 @@ def reset(request):
         else:
             pass
     return redirect('index')
+
+def driver_to_trip(request):
+    logger.warn("assign driver to trip")
+    return redirect('index')
+

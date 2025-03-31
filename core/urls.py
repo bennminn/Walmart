@@ -14,4 +14,5 @@ urlpatterns = [
 
     path('clear_history/', views.clear_history, name='clear_history'),
     path('reset/', views.reset, name='reset'),
+    path('driver_to_trip/', views.driver_to_trip, name='driver_to_trip'),
 ]

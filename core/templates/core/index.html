@@ -50,15 +50,17 @@
                         <th scope="col">Nombre</th>
                         <th scope="col">Transportista</th>
                         <th scope="col">Hora</th>
+                        <th scope="col">Viaje</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for profile in present %}
                     <tr>
-                        <th scope="row">-</th>
+                        <th scope="row"></th>
                         <td>{{profile.first_name}} {{profile.last_name}}</td>
                         <td>{{profile.profession}}</td>
                         <td>{{profile.updated |date:"h:iA"}}</td>
+                        <td><a href="{% url 'driver_to_trip' %}"><button type="button" class="btn btn-outline-danger">Asignar Ruta</button></a></td>
                     </tr>
                     {% endfor%}
                 </tbody>
