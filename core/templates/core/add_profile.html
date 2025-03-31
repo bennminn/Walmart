@@ -11,51 +11,50 @@
 
                 <div class="d-flex justify-content-between">
                     <div class="m-1 mr-2">
-                        <label class="text-muted"><small>First Name:</small></label>
+                        <label class="text-muted"><small>Rut:</small></label>
+                        {{ form.rut }}
+                    </div>
+                    <div class="m-1 mr-2">
+                        <label class="text-muted"><small>Nombre:</small></label>
                         {{ form.first_name }}
                     </div>
 
                     <div class="m-1">
-                        <label class="text-muted"><small>Last Name:</small></label>
+                        <label class="text-muted"><small>Apellido:</small></label>
                         {{ form.last_name }}
                     </div>
                 </div>
 
                 <div class="ml-1">
-                    <label class="text-muted"><small>Phone Number:</small></label>
+                    <label class="text-muted"><small>Telefono:</small></label>
                     {{ form.phone }}
                 </div>
                 <div class="m-1">
                     <label class="text-muted"><small>Email:</small></label>
                     {{ form.email }}
                 </div>
-                <div class="m-1">
-                    <label class="text-muted"><small>Birth date:</small></label>
-                    {{ form.date }}
-                </div>
             </div>
-
 
             <div class="col-md-4">
                 <h5 class="text-muted">Información de Transportista:</h5><br>
                 <div class="m-1">
-                    <label class="text-muted"><small>Empresa Transortista:</small></label>
-                    {{ form.profession }}
+                    <label class="text-muted"><small>Cod Transportista:</small></label>
+                    {{ form.CodTransportista }}
                 </div>
                 <div class="m-1">
-                    <label class="text-muted"><small>Status:</small></label>
+                    <label class="text-muted"><small>Empresa Transportista:</small></label>
+                    {{ form.Transportista }}
+                </div>
+                <div class="m-1">
+                    <label class="text-muted"><small>Patente:</small></label>
+                    {{ form.Patente }}
+                </div>
+                <div class="m-1">
+                    <label class="text-muted"><small>Zona de despacho:</small></label>
                     {{ form.status }}
                 </div>
-                <div class="m-1">
-                    <label class="text-muted"><small>Shift:</small></label>
-                    {{ form.shift }}
-                </div>
-                <div class="m-1" style="width: 4rem;">
-                    <label class="text-muted"><small>Ranking/10:</small></label>
-                    {{ form.ranking }}
-                </div>
             </div>
-
+            
             <div class="col-md-4">
                 <h5 class="text-muted">Biometric Photo:</h5><br>
                 <div>
@@ -67,7 +66,7 @@
                             <path
                                 d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995z" />
                         </svg>
-                        <small>Solo admite fotografias en formato .jpg</small>
+                        <small>El formato de la imagen debe ser .jpg</small>
                     </div>
                     <img src="{% static 'img/bio.jpg'%}" alt="" width="100%">
                 </div>
@@ -83,8 +82,4 @@
         </div>
     </form>
 </div>
-
-
-
-
 {% endblock content %}

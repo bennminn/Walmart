@@ -24,6 +24,99 @@
     </div>
 </div>
 
+
+
+<div class="container emp-profile">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="profile-img">
+                    {% if profile.image %}
+                        <img src="{{ profile.image.url }}" alt="" />
+                    {% else %}
+                        <div style="width: 150px; height: 150px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center;">
+                            <span>Sin Imagen</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="profile-head">
+                    {% comment %} <h5>
+                        {{profile.first_name}} {{profile.last_name}}
+                    </h5> {% endcomment %}
+                    
+                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab"
+                                aria-controls="home" aria-selected="true">Info</a>
+                        </li>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+
+            </div>
+            <div class="col-md-8">
+                <div class="profile-tab" id="myTabContent">
+                    <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>RUT</label>
+                            </div>
+                            <div class="col-md-6">
+                                <p id='Rut'>{{profile.rut}}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Nombre</label>
+                            </div>
+                            <div class="col-md-6">
+                                <p  id='Nombre'>{{profile.first_name}} {{profile.last_name}}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Email</label>
+                            </div>
+                            <div class="col-md-6">
+                                <p id='Email'>{{profile.email}}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Telefono</label>
+                            </div>
+                            <div class="col-md-6">
+                                <p id='Phone'>{{profile.phone}}</h7>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Transportista</label>
+                            </div>
+                            <div class="col-md-6">
+                                <p id='Empresa'>{{ profile.Transportista }}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Zona</label>
+                            </div>
+                            <div class="col-md-6">
+                                <p id='Status'>{{ profile.status }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+
 <script>
     
     const getCookie = (name) => {
@@ -82,11 +175,61 @@
                             processData: false,
                             contentType: false,
                             success: (resp) => {
-                                console.log(resp);
+                                console.log(resp); // Depuración: verifica la respuesta del servidor
                                 if (resp.success) {
-                                    alert(`Rostro detectado: ${resp.faces.join(', ')}`); // Muestra los nombres de los usuarios detectados
+                                    // Actualiza la imagen del perfil
+                                    const profileImgContainer = document.querySelector('.profile-img');
+                                    let profileImg = profileImgContainer.querySelector('img');
+
+                                    if (!profileImg) {
+                                        // Si no existe el elemento <img>, crea uno y reemplaza el cuadro "Sin Imagen"
+                                        profileImg = document.createElement('img');
+                                        profileImg.alt = '';
+                                        profileImgContainer.innerHTML = ''; // Limpia el contenido actual
+                                        profileImgContainer.appendChild(profileImg);
+                                    }
+
+                                    profileImg.src = resp.profile.image_url;
+
+                                    // Actualiza la información del perfil
+                                    document.querySelector('.profile-tab #Nombre').textContent = `${resp.profile.first_name} ${resp.profile.last_name}`;
+                                    document.querySelector('.profile-tab #Empresa').textContent = resp.profile.transportista;
+                                    document.querySelector('.profile-tab #Rut').textContent = resp.profile.rut;
+                                    document.querySelector('.profile-tab #Email').textContent = resp.profile.email;
+                                    document.querySelector('.profile-tab #Phone').textContent = `0${resp.profile.phone}`;
+                                    document.querySelector('.profile-tab #Status').textContent = resp.profile.status;
+                                    // Actualiza el historial
+                                    const historyTable = document.querySelector('#profile tbody');
+                                    historyTable.innerHTML = ''; // Limpia el historial actual
+
+                                    if (resp.history && resp.history.length > 0) {
+                                        resp.history.forEach(face => {
+                                            const row = `
+                                                <tr>
+                                                    <th scope="row">-</th>
+                                                    <td>${face.last_face}</td>
+                                                    <td>${face.date}</td>
+                                                </tr>
+                                            `;
+                                            historyTable.innerHTML += row;
+                                        });
+                                    } else {
+                                        // Si no hay datos, muestra un mensaje
+                                        historyTable.innerHTML = `
+                                            <tr>
+                                                <td colspan="3" class="text-center">No hay registros en el historial.</td>
+                                            </tr>
+                                        `;
+                                    }
+
+                                    // Actualiza el ID del perfil en el contenedor
+                                    const profileContainer = document.getElementById('idProfile');
+                                    if (profileContainer) {
+                                        profileContainer.setAttribute('id', `idProfile-${resp.profile.id}`);
+                                        profileContainer.setAttribute('data-id', resp.profile.id);
+                                    }
                                 } else {
-                                    alert('No se detectaron rostros o ocurrió un error.');
+                                    alert(resp.error || 'No se detectaron rostros.');
                                 }
                             },
                             error: (err) => {

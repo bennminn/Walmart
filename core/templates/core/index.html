@@ -16,7 +16,7 @@
         </div>
         <div class="col-12 col-md-3 text-center">
             <a target="_blank" class="scan" href="{% url 'details' %}">
-                <input type="submit" class="btn btn-primary btn-block m-2" name="btnAddMore" value="Registrar Conductor" />
+                <input type="submit" class="btn btn-primary btn-block m-2" name="btnAddMore" value="Escanear Conductor" />
             </a>
             <a href="{% url 'profiles' %}">
                 <input type="submit" class="btn btn-secondary btn-block m-2" name="btnAddMore" value="Editar Conductores" />
@@ -46,26 +46,31 @@
             <table class="table table-striped ">
                 <thead>
                     <tr>
-                        <th scope="col"> </th>
+                        <th scope="col">RUT</th>
                         <th scope="col">Nombre</th>
                         <th scope="col">Transportista</th>
                         <th scope="col">Hora</th>
+                        <th scope="col">Zona</th>
                         <th scope="col">Viaje</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for profile in present %}
                     <tr>
-                        <th scope="row"></th>
+                        {% comment %} <th scope="row">-</th> {% endcomment %}
+                        <td>{{profile.rut}}</td>
                         <td>{{profile.first_name}} {{profile.last_name}}</td>
-                        <td>{{profile.profession}}</td>
+                        <td>{{profile.Transportista}}</td>
                         <td>{{profile.updated |date:"h:iA"}}</td>
+                        <td>{{profile.status}}</td>
                         <td><a href="{% url 'driver_to_trip' %}"><button type="button" class="btn btn-outline-danger">Asignar Ruta</button></a></td>
                     </tr>
                     {% endfor%}
                 </tbody>
             </table>
-            <a href="{% url 'reset' %}"><button type="button" class="btn btn-outline-secondary">Reiniciar</button></a>
+            <a href="{% url 'reset' %}" onclick="return confirm('¿Estás seguro de que deseas reiniciar?')">
+                <button type="button" class="btn btn-outline-secondary">Reiniciar</button>
+            </a>
             <a href="{% url 'index' %}"><button type="button" class="btn btn-outline-primary">Actualizar</button></a>
 
         </div>
@@ -75,18 +80,20 @@
                 <thead>
                     <tr>
                         <th scope="col"> </th>
+                        <th scope="col">Rut</th>
                         <th scope="col">Nombre</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">Turno</th>
+                        <th scope="col">Transportista</th>
+
                     </tr>
                 </thead>
                 <tbody>
-                    {% for profile in absent %}
+                    {% for profile in absent%}
                     <tr>
                         <th scope="row">-</th>
+                        <td>{{profile.rut}}</td>
                         <td>{{profile.first_name}} {{profile.last_name}}</td>
-                        <td>{{profile.profession}}</td>
-                        <td>{{profile.shift}}</td>
+                        <td>{{profile.Transportista}}</td>
+                        
                     </tr>
                     {% endfor%}
                 </tbody>
@@ -95,10 +102,10 @@
         </div>
 
         <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="contact-tab">
+            <h5>Historial de Rostros Escaneados</h5>
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th scope="col"> </th>
                         <th scope="col">Nombre del Rostro</th>
                         <th scope="col">Fecha</th>
                     </tr>
@@ -106,18 +113,45 @@
                 <tbody>
                     {% for face in scanned %}
                     <tr>
-                        <th scope="row">-</th>
                         <td>{{ face.last_face }}</td>
                         <td>{{ face.date|date:"d/m/Y H:i" }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="3" class="text-center">No hay registros en el historial.</td>
+                        <td colspan="2" class="text-center">No hay registros en el historial.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            <a href="{% url 'clear_history' %}">
+
+            <h5>Historial de Cambios de Estado</h5>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">RUN</th>
+                        <th scope="col">Zona Anterior</th>
+                        <th scope="col">Nueva Zona</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for change in history %}
+                    <tr>
+                        <td>{{ change.date|date:"d/m/Y H:i" }}</td>
+                        <td>{{ change.profile.first_name }} {{ change.profile.last_name }}</td>
+                        <td>{{ change.profile.rut }}</td>
+                        <td>{{ change.previous_status }}</td>
+                        <td>{{ change.new_status }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No hay cambios registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <a href="{% url 'clear_history' %}" onclick="return confirm('¿Estás seguro de que deseas limpiar el historial?')">
                 <button type="button" class="btn btn-outline-secondary">Limpiar Historial</button>
             </a>
         </div>

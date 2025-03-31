@@ -1,29 +1,26 @@
 from django import forms
-from .models import *
+from .models import Profile
+from django.core.exceptions import ValidationError
 
-class DateInput(forms.DateInput):
-    input_type = 'date'
-class TimeInput(forms.TimeInput):
-    input_type = 'time'
+# class DateInput(forms.DateInput):
+#     input_type = 'date'
+
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = '__all__'
-        widgets = {
-            'date': DateInput(),
-            'shift':TimeInput()
-        }
-        exclude = ['present','updated']
+        # widgets = {
+        #     'date': DateInput()
+        # }
+        exclude = ['present', 'updated', 'date']  # Excluye campos que no deseas mostrar en el formulario
 
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
-        self.fields['first_name'].widget.attrs['class'] = 'form-control'
-        self.fields['last_name'].widget.attrs['class'] = 'form-control'
-        self.fields['date'].widget.attrs['class'] = 'form-control'
-        self.fields['phone'].widget.attrs['class'] = 'form-control'
-        self.fields['email'].widget.attrs['class'] = 'form-control'
-        self.fields['ranking'].widget.attrs['class'] = 'form-control'
-        self.fields['profession'].widget.attrs['class'] = 'form-control'
-        self.fields['status'].widget.attrs['class'] = 'form-control'
-        self.fields['image'].widget.attrs['class'] = 'form-control'
-        self.fields['shift'].widget.attrs['class'] = 'form-control'
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control'
+
+    def clean_rut(self):
+        rut = self.cleaned_data.get('rut')
+        if not rut or rut <= 0:
+            raise ValidationError('El RUT debe ser un número positivo.')
+        return rut
