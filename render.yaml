@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: django-app
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn myproject.wsgi:application
+    pythonVersion: 3.12
