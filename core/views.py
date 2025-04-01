@@ -138,15 +138,8 @@ def find_user_view(request):
         return JsonResponse({'success': False})
 
 def scan(request):
-    logger.warn(f"Request method: {request.method}")
-    if request.method == "GET":
-        logger.warn(f"Inspecting GET request: {request.GET}")
-        logger.warn(f"Request headers: {request.headers}")
-        logger.warn(f"Request path: {request.path}\n")
-    else:
-        logger.warn(f"Inspecting POST request: {type(request.POST)}\n")
-
     if request.method == 'POST':
+        logger.warn(f"Inspecting POST request: {type(request.POST)}")
         photo = request.POST.get('photo')
         if not photo.startswith('data:image/'):
             msg = 'Formato de imagen no válido'
@@ -169,8 +162,6 @@ def scan(request):
             image = face_recognition.load_image_file(temp_image_path)
             face_locations = face_recognition.face_locations(image)
             face_encodings = face_recognition.face_encodings(image, face_locations)
-            logger. warn(f"Face locations: {face_locations}")
-            logger.warn(f"Face encodings: {face_encodings}")
 
             known_face_encodings = []
             known_face_names = []
@@ -186,7 +177,6 @@ def scan(request):
                     known_face_names.append(profile.first_name + " " + profile.last_name)
                 else:
                     logger.warn(f"No face encoding found for profile: {profile.id}")
-            logger.warn(f"Known face encodings: {known_face_encodings}")
             logger.warn(f"Known face names: {known_face_names}")
 
             face_names = []
@@ -246,9 +236,7 @@ def scan(request):
             logger.warn(f"Unexpected error: {str(e)}")
             return JsonResponse({'success': False, 'error': f'Error inesperado: {str(e)}'})
     else:
-        msg = 'Verbo no POST recibido'
-        logger.warn(msg)
-        return JsonResponse({'success': False, 'error': msg})
+        return JsonResponse({'success': False, 'error': 'Verbo no POST recibido'})
 
 
 
