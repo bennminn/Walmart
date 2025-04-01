@@ -5,9 +5,13 @@ core/migrations/__pycache__/
 *$py.class
 core/__pycache__/
 *.pyc
+*.png
+*.jpg
+# db.sqlite3
 
 # C extensions
 *.so
+
 
 
 # Distribution / packaging

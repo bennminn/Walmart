@@ -116,6 +116,8 @@
         </div>
 </div>
 
+<div id="welcome-message" class="welcome-message"></div>
+
 
 <script>
     
@@ -175,6 +177,11 @@
                             processData: false,
                             contentType: false,
                             success: (resp) => {
+                                //alert(`Bienvenido ${resp.profile.first_name} ${resp.profile.last_name}`);
+                                window.scrollTo({
+                                        top: document.body.scrollHeight,
+                                        behavior: 'smooth'
+                                });
                                 console.log(resp); // Depuración: verifica la respuesta del servidor
                                 if (resp.success) {
                                     // Actualiza la imagen del perfil
@@ -191,6 +198,8 @@
 
                                     profileImg.src = resp.profile.image_url;
 
+                                    
+
                                     // Actualiza la información del perfil
                                     document.querySelector('.profile-tab #Nombre').textContent = `${resp.profile.first_name} ${resp.profile.last_name}`;
                                     document.querySelector('.profile-tab #Empresa').textContent = resp.profile.transportista;
@@ -198,9 +207,12 @@
                                     document.querySelector('.profile-tab #Email').textContent = resp.profile.email;
                                     document.querySelector('.profile-tab #Phone').textContent = `0${resp.profile.phone}`;
                                     document.querySelector('.profile-tab #Status').textContent = resp.profile.status;
+
                                     // Actualiza el historial
                                     const historyTable = document.querySelector('#profile tbody');
                                     historyTable.innerHTML = ''; // Limpia el historial actual
+
+
 
                                     if (resp.history && resp.history.length > 0) {
                                         resp.history.forEach(face => {
@@ -228,6 +240,11 @@
                                         profileContainer.setAttribute('id', `idProfile-${resp.profile.id}`);
                                         profileContainer.setAttribute('data-id', resp.profile.id);
                                     }
+
+
+
+
+
                                 } else {
                                     alert(resp.error || 'No se detectaron rostros.');
                                 }

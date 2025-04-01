@@ -39,4 +39,3 @@ class StatusChangeHistory(models.Model):
 
     def __str__(self):
         return f"{self.profile.first_name} {self.profile.last_name}: {self.previous_status} -> {self.new_status}"
-
