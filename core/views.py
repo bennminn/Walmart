@@ -95,8 +95,57 @@ def ajax(request):
     }
     return render(request, 'core/ajax.html', context)
 
+def find_user_view(request):
+    if is_ajax(request):
+        photo = request.POST.get('photo')
+        _, str_img = photo.split(';base64')
+
+        try:
+            decoded_file = base64.b64decode(str_img)
+            
+            # Convert the image to RGB format
+            image = Image.open(io.BytesIO(decoded_file))
+            image = image.convert('RGB')  # Ensure the image is in RGB format
+        except Exception as e:
+            print(f"Error processing image: {e}")
+            return JsonResponse({'success': False, 'error': 'Invalid image format'})
+            
+        # Save the image
+        buffer = BytesIO()
+        image.save(buffer, format='JPEG', quality=95)  # Use JPEG for better compatibility
+        buffer.seek(0)
+        
+        x = Log()
+        x.photo.save('upload.jpg', ContentFile(buffer.read()))
+        x.save()
+        
+        # Call classify_face only once
+        try:
+            res = classify_face(x.photo.path)
+        except Exception as e:
+            print(f"Error during face classification: {e}")
+            return JsonResponse({'success': False, 'error': str(e)})
+        if res:
+            user_exists = User.objects.filter(username=res).exists()
+            if user_exists:
+                user = User.objects.get(username=res)
+                profile = Profile.objects.get(user=user)
+                x.profile = profile
+                x.save()
+
+                login(request, user)
+                return JsonResponse({'success': True})
+        return JsonResponse({'success': False})
 
 def scan(request):
+    logger.warn(f"Request method: {request.method}")
+    if request.method == "GET":
+        logger.warn(f"Inspecting GET request: {request.GET}")
+        logger.warn(f"Request headers: {request.headers}")
+        logger.warn(f"Request path: {request.path}\n")
+    else:
+        logger.warn(f"Inspecting POST request: {type(request.POST)}\n")
+
     if request.method == 'POST':
         photo = request.POST.get('photo')
         if not photo.startswith('data:image/'):
@@ -108,16 +157,20 @@ def scan(request):
 
         try:
             decoded_file = base64.b64decode(str_img)
+            logger.warn("Image decoded successfully")
 
             # Guardar la imagen en la carpeta media
             temp_image_path = os.path.join('media', 'temp_image.png')
             with open(temp_image_path, 'wb') as f:
                 f.write(decoded_file)
+            logger.warn("Image saved to media folder")
 
             # Cargar la imagen y realizar el reconocimiento facial
             image = face_recognition.load_image_file(temp_image_path)
             face_locations = face_recognition.face_locations(image)
             face_encodings = face_recognition.face_encodings(image, face_locations)
+            logger. warn(f"Face locations: {face_locations}")
+            logger.warn(f"Face encodings: {face_encodings}")
 
             known_face_encodings = []
             known_face_names = []
@@ -127,9 +180,14 @@ def scan(request):
             for profile in profiles:
                 person = profile.image
                 image_of_person = face_recognition.load_image_file(f'media/{person}')
-                person_face_encoding = face_recognition.face_encodings(image_of_person)[0]
-                known_face_encodings.append(person_face_encoding)
-                known_face_names.append(profile.first_name + " " + profile.last_name)
+                person_face_encoding = face_recognition.face_encodings(image_of_person)
+                if person_face_encoding:
+                    known_face_encodings.append(person_face_encoding[0])
+                    known_face_names.append(profile.first_name + " " + profile.last_name)
+                else:
+                    logger.warn(f"No face encoding found for profile: {profile.id}")
+            logger.warn(f"Known face encodings: {known_face_encodings}")
+            logger.warn(f"Known face names: {known_face_names}")
 
             face_names = []
             for face_encoding in face_encodings:
@@ -138,7 +196,7 @@ def scan(request):
 
                 face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
                 best_match_index = np.argmin(face_distances)
-                if matches[best_match_index]:
+                if matches and matches[best_match_index]:
                     name = known_face_names[best_match_index]
 
                     # Buscar el perfil correspondiente
@@ -185,7 +243,13 @@ def scan(request):
             return JsonResponse({'success': False, 'error': 'No se detectaron coincidencias.'})
 
         except Exception as e:
+            logger.warn(f"Unexpected error: {str(e)}")
             return JsonResponse({'success': False, 'error': f'Error inesperado: {str(e)}'})
+    else:
+        msg = 'Verbo no POST recibido'
+        logger.warn(msg)
+        return JsonResponse({'success': False, 'error': msg})
+
 
 
 def profiles(request):
@@ -262,8 +326,3 @@ def reset(request):
         else:
             pass
     return redirect('index')
-
-def driver_to_trip(request):
-    logger.warn("assign driver to trip")
-    return redirect('index')
-

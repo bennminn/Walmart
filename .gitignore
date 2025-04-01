@@ -7,7 +7,7 @@ core/__pycache__/
 *.pyc
 *.png
 *.jpg
-db.sqlite3
+# db.sqlite3
 
 # C extensions
 *.so
