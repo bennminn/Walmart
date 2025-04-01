@@ -39,11 +39,3 @@ class StatusChangeHistory(models.Model):
 
     def __str__(self):
         return f"{self.profile.first_name} {self.profile.last_name}: {self.previous_status} -> {self.new_status}"
-
-
-class Trips(models.Model):
-    name = models.CharField(max_length=200)
-    date = models.DateTimeField(auto_now_add=True)
-    def __str__(self):
-        return self.Trips
-
