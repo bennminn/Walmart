@@ -1,6 +1,6 @@
 # import face_recognition as fr
 # import numpy as np
-# from profiles.models import Profile
+# from models import Profile
 # from PIL import Image, ImageOps
 
 

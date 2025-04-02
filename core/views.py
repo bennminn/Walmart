@@ -3,7 +3,6 @@ from .models import *
 from .forms import *
 import face_recognition
 import numpy as np
-import winsound
 from django.db.models import Q
 import os
 from django.http import JsonResponse
@@ -15,8 +14,6 @@ from django.contrib.auth import logout, login, authenticate
 from django.contrib import messages
 from django.utils import timezone
 import logging
-
-
 # def find_user_view(request):
 #     if is_ajax(request):
 #         photo = request.POST.get('photo')
@@ -118,47 +115,6 @@ def ajax(request):
     }
     return render(request, 'core/ajax.html', context)
 
-def find_user_view(request):
-    if is_ajax(request):
-        photo = request.POST.get('photo')
-        _, str_img = photo.split(';base64')
-
-        try:
-            decoded_file = base64.b64decode(str_img)
-            
-            # Convert the image to RGB format
-            image = Image.open(io.BytesIO(decoded_file))
-            image = image.convert('RGB')  # Ensure the image is in RGB format
-        except Exception as e:
-            print(f"Error processing image: {e}")
-            return JsonResponse({'success': False, 'error': 'Invalid image format'})
-            
-        # Save the image
-        buffer = BytesIO()
-        image.save(buffer, format='JPEG', quality=95)  # Use JPEG for better compatibility
-        buffer.seek(0)
-        
-        x = Log()
-        x.photo.save('upload.jpg', ContentFile(buffer.read()))
-        x.save()
-        
-        # Call classify_face only once
-        try:
-            res = classify_face(x.photo.path)
-        except Exception as e:
-            print(f"Error during face classification: {e}")
-            return JsonResponse({'success': False, 'error': str(e)})
-        if res:
-            user_exists = User.objects.filter(username=res).exists()
-            if user_exists:
-                user = User.objects.get(username=res)
-                profile = Profile.objects.get(user=user)
-                x.profile = profile
-                x.save()
-
-                login(request, user)
-                return JsonResponse({'success': True})
-        return JsonResponse({'success': False})
 
 def scan(request):
     if request.method == 'POST':
