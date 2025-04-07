@@ -8,10 +8,16 @@ ENV PORT 8000
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
-    cmake \
+    wget \
     libsqlite3-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Install CMake from an official source
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.27.6/cmake-3.27.6-linux-x86_64.sh \
+    && chmod +x cmake-3.27.6-linux-x86_64.sh \
+    && ./cmake-3.27.6-linux-x86_64.sh --skip-license --prefix=/usr/local \
+    && rm cmake-3.27.6-linux-x86_64.sh
 
 # Set the working directory
 WORKDIR /app
@@ -24,7 +30,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Collect static files
-RUN python manage.py collectstatic --noinput
+RUN python manage.py collectstatic --noinput --clear  # Limpia y recopila archivos estáticos
 
 # Expose the application port
 EXPOSE $PORT
