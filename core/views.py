@@ -11,6 +11,7 @@ from django.core.files.base import ContentFile
 from django.contrib.auth.models import User
 from PIL import Image
 from django.contrib.auth import logout, login, authenticate
+from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
 from django.utils import timezone
 import logging
@@ -114,7 +115,6 @@ def ajax(request):
         'last_face': last_face
     }
     return render(request, 'core/ajax.html', context)
-
 
 def scan(request):
     if request.method == 'POST':
@@ -293,3 +293,19 @@ def reset(request):
         else:
             pass
     return redirect('index')
+
+def profile_details(request, profile_id):
+    try:
+        profile = Profile.objects.get(id=profile_id)
+        profile_data = {
+            'rut': profile.rut,
+            'first_name': profile.first_name,
+            'last_name': profile.last_name,
+            'email': profile.email,
+            'phone': profile.phone,
+            'transportista': profile.Transportista,
+            'status': profile.status
+        }
+        return JsonResponse({'success': True, 'profile': profile_data})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'Error inesperado: {str(e)}'})

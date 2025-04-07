@@ -1,8 +1,14 @@
 {% extends "core/base.html" %}
 {% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/arrow.css' %}">
+<link rel="stylesheet" href="{% static 'css/modal.css' %}">
+<link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+{% endblock %}
 {% block content %}
 
 <div class="container emp-profile" style="max-width: 90%;">
+
 
     <div class="row">
         <div class="col-12 col-md-3 text-center">
@@ -19,14 +25,18 @@
                 <input type="submit" class="btn btn-danger btn-block m-2" name="btnAddMore" value="Cerrar Sesión" />
             </a>
             <a target="_blank" class="scan" href="{% url 'details' %}">
-                <input type="submit" class="btn btn-primary btn-block m-2" name="btnAddMore" value="Escanear Conductor" />
+                <input type="submit" class="btn btn-primary btn-block m-2" name="btnAddMore"
+                    value="Escanear Conductor" />
             </a>
             <a href="{% url 'profiles' %}">
-                <input type="submit" class="btn btn-secondary btn-block m-2" name="btnAddMore" value="Editar Conductores" />
+                <input type="submit" class="btn btn-secondary btn-block m-2" name="btnAddMore"
+                    value="Editar Conductores" />
             </a>
         </div>
     </div>
+
     <hr>
+
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
             <a class="nav-link active" id="present-tab" data-toggle="tab" href="#present" role="tab"
@@ -42,74 +52,85 @@
         </li>
     </ul>
 
+
     <div class="tab-content" id="myTabContent">
         <br>
         <div class="tab-pane fade show active" id="present" role="tabpanel" aria-labelledby="home-tab">
-
             <div class="row">
-            <div class="col-md-6">
-                <h5>En espera</h5>
-                <table class="table table-striped">
-                <thead>
-                    <tr>
-                    <th scope="col">RUT</th>
-                    <th scope="col">Nombre</th>
-                    <th scope="col">Transportista</th>
-                    <th scope="col">Hora</th>
-                    <th scope="col">Zona</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for profile in present %}
-                    <tr>
-                    <td>{{profile.rut}}</td>
-                    <td>{{profile.first_name}} {{profile.last_name}}</td>
-                    <td>{{profile.Transportista}}</td>
-                    <td>{{profile.updated |date:"h:iA"}}</td>
-                    <td>{{profile.status}}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-                </table>
-            </div>
+                <div class="col-md-6">
+                    <h5>En espera</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Añadir</th>
+                                    <th scope="col">RUT</th>
+                                    <th scope="col">Nombre</th>
+                                    <th scope="col">Transportista</th>
+                                    <th scope="col">Hora</th>
+                                    <th scope="col">Zona</th>
+                                    <th scope="col">Reordenar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for profile in present %}
+                                <tr onclick="showArrows(this)">
+                                    <td><button onclick="showProfileModal('{{ profile.id }}')">+</button></td>
+                                    <td>{{profile.rut}}</td>
+                                    <td>{{profile.first_name}} {{profile.last_name}}</td>
+                                    <td>{{profile.Transportista}}</td>
+                                    <td>{{profile.updated |date:"h:iA"}}</td>
+                                    <td>{{profile.status}}</td>
+                                    <td class="actions" style="display: none;">
+                                        <button onclick="moveUp(this)">▲</button>
+                                        <button onclick="moveDown(this)">▼</button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-            <div class="col-md-6">
-                <h5>Asignado</h5>
-                <table class="table table-striped">
-                <thead>
-                    <tr>
-                    <th scope="col">RUT</th>
-                    <th scope="col">Nombre</th>
-                    <th scope="col">Transportista</th>
-                    <th scope="col">Hora</th>
-                    <th scope="col">Zona</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for profile in present %}
-                    <tr>
-                    <td>{{profile.rut}}</td>
-                    <td>{{profile.first_name}} {{profile.last_name}}</td>
-                    <td>{{profile.Transportista}}</td>
-                    <td>{{profile.updated |date:"h:iA"}}</td>
-                    <td>{{profile.status}}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-                </table>
-            </div>
+                <div class="col-md-6">
+                    <h5>Asignado</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col">RUT</th>
+                                    <th scope="col">Nombre</th>
+                                    <th scope="col">Transportista</th>
+                                    <th scope="col">Hora</th>
+                                    <th scope="col">Zona</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for profile in assigned %}
+                                <tr>
+                                    <td>{{profile.rut}}</td>
+                                    <td>{{profile.first_name}} {{profile.last_name}}</td>
+                                    <td>{{profile.Transportista}}</td>
+                                    <td>{{profile.updated |date:"h:iA"}}</td>
+                                    <td>{{profile.status}}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <div class="mt-3">
-            <a href="{% url 'reset' %}" onclick="return confirm('¿Estás seguro de que deseas reiniciar?')">
-                <button type="button" class="btn btn-outline-secondary">Reiniciar</button>
-            </a>
-            <a href="{% url 'index' %}">
-                <button type="button" class="btn btn-outline-primary">Actualizar</button>
-            </a>
+                <a href="{% url 'reset' %}" onclick="return confirm('¿Estás seguro de que deseas reiniciar?')">
+                    <button type="button" class="btn btn-outline-secondary">Reiniciar</button>
+                </a>
+                <a href="{% url 'index' %}">
+                    <button type="button" class="btn btn-outline-primary">Actualizar</button>
+                </a>
             </div>
-
         </div>
+
 
         <div class="tab-pane fade" id="absent" role="tabpanel" aria-labelledby="profile-tab">
             <table class="table table-striped ">
@@ -129,13 +150,14 @@
                         <td>{{profile.rut}}</td>
                         <td>{{profile.first_name}} {{profile.last_name}}</td>
                         <td>{{profile.Transportista}}</td>
-                        
+
                     </tr>
                     {% endfor%}
                 </tbody>
             </table>
 
         </div>
+
 
         <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="contact-tab">
             <h5>Historial de Rostros Escaneados</h5>
@@ -187,23 +209,36 @@
                     {% endfor %}
                 </tbody>
             </table>
-            <a href="{% url 'clear_history' %}" onclick="return confirm('¿Estás seguro de que deseas limpiar el historial?')">
+            <a href="{% url 'clear_history' %}"
+                onclick="return confirm('¿Estás seguro de que deseas limpiar el historial?')">
                 <button type="button" class="btn btn-outline-secondary">Limpiar Historial</button>
             </a>
         </div>
     </div>
 
-</div>
-<script>
-    $(".scan").click(function () {
-        var postData = { csrfmiddlewaretoken: '{{ csrf_token }}' }
-        $.ajax({
-            url: "{% url 'scan' %}",
-            data: {
 
-            },
+
+    <!-- Modal Structure -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeProfileModal()">&times;</span>
+            <div id="profileDetails"></div>
+        </div>
+    </div>
+
+
+
+    <script>
+        $(".scan").click(function () {
+            var postData = { csrfmiddlewaretoken: '{{ csrf_token }}' }
+            $.ajax({
+                url: "{% url 'scan' %}",
+                data: {
+
+                },
+            });
         });
-    });
-</script>
-
-{% endblock content %}
+    </script>
+    <script src="{% static 'js/reorder.js' %}"></script>
+    <script src="{% static 'js/modal.js' %}"></script>
+    {% endblock content %}

@@ -16,4 +16,6 @@ urlpatterns = [
 
     path('clear_history/', views.clear_history, name='clear_history'),
     path('reset/', views.reset, name='reset'),
+
+    path('profile/<int:profile_id>/details/', views.profile_details, name='profile_details'),
 ]
