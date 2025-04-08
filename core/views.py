@@ -68,14 +68,14 @@ sound = os.path.join(sound_folder, 'beep.wav')
 logger = logging.getLogger('face_attendance')
 logger.debug('This is a test debug message')
 logger.info('This is a test info message')
-logger.warn('This is a test warn message')
+logger.warning('This is a test warn message')
 
 def login_succes(request):
     data = {"mesg": "", "form": LoginForm()}
     username = request.GET.get('username', '')
     if request.method == "POST":
         form = LoginForm(request.POST)
-        if form.is_valid:
+        if form.is_valid():
             username = request.POST.get("username")
             password = request.POST.get("password")
             user = authenticate(username=username, password=password)
@@ -118,45 +118,40 @@ def ajax(request):
 
 def scan(request):
     if request.method == 'POST':
-        logger.warn(f"Inspecting POST request: {type(request.POST)}")
+        logger.warning(f"Inspecting POST request: {type(request.POST)}")
         photo = request.POST.get('photo')
-        if not photo.startswith('data:image/'):
-            msg = 'Formato de imagen no válido'
-            logger.warn(msg)
+        if not photo or not photo.startswith('data:image/'):
+            msg = 'Formato de imagen no válido o imagen no proporcionada'
+            logger.warning(msg)
             return JsonResponse({'success': False, 'error': msg})
 
         _, str_img = photo.split(';base64')
 
         try:
             decoded_file = base64.b64decode(str_img)
-            logger.warn("Image decoded successfully")
+            logger.warning("Image decoded successfully")
 
-            # Guardar la imagen en la carpeta media
-            temp_image_path = os.path.join('media', 'temp_image.png')
-            with open(temp_image_path, 'wb') as f:
-                f.write(decoded_file)
-            logger.warn("Image saved to media folder")
-
-            # Cargar la imagen y realizar el reconocimiento facial
-            image = face_recognition.load_image_file(temp_image_path)
+            # Cargar la imagen directamente desde base64
+            image = face_recognition.load_image_file(ContentFile(decoded_file))
             face_locations = face_recognition.face_locations(image)
             face_encodings = face_recognition.face_encodings(image, face_locations)
 
             known_face_encodings = []
             known_face_names = []
 
-            # Cargar perfiles conocidos
+            # Cargar perfiles conocidos desde la base de datos
             profiles = Profile.objects.all()
             for profile in profiles:
-                person = profile.image
-                image_of_person = face_recognition.load_image_file(f'media/{person}')
-                person_face_encoding = face_recognition.face_encodings(image_of_person)
-                if person_face_encoding:
-                    known_face_encodings.append(person_face_encoding[0])
-                    known_face_names.append(profile.first_name + " " + profile.last_name)
-                else:
-                    logger.warn(f"No face encoding found for profile: {profile.id}")
-            logger.warn(f"Known face names: {known_face_names}")
+                if profile.image_base64:
+                    decoded_image = base64.b64decode(profile.image_base64)
+                    image_of_person = face_recognition.load_image_file(ContentFile(decoded_image))
+                    person_face_encoding = face_recognition.face_encodings(image_of_person)
+                    if person_face_encoding:
+                        known_face_encodings.append(person_face_encoding[0])
+                        known_face_names.append(profile.first_name + " " + profile.last_name)
+                    else:
+                        logger.warning(f"No face encoding found for profile: {profile.id}")
+            logger.warning(f"Known face names: {known_face_names}")
 
             face_names = []
             for face_encoding in face_encodings:
@@ -175,10 +170,7 @@ def scan(request):
 
                     # Cambiar el status basado en el último viaje
                     previous_status = profile.status
-                    if previous_status == 'Zona Cero':
-                        profile.status = 'RM'
-                    else:
-                        profile.status = 'Zona Cero'
+                    profile.status = 'RM' if previous_status == 'Zona Cero' else 'Zona Cero'
 
                     # Guardar el historial de cambios
                     StatusChangeHistory.objects.create(
@@ -199,24 +191,27 @@ def scan(request):
                     )
 
                     return JsonResponse({'success': True, 'profile': {
+                        'id': profile.id,  # Asegúrate de incluir el ID del perfil
                         'rut': profile.rut,
                         'first_name': profile.first_name,
                         'last_name': profile.last_name,
                         'email': profile.email,
                         'phone': profile.phone,
                         'transportista': profile.Transportista,
-                        'image_url': profile.image.url,
+                        'image_base64': profile.image_base64,  # Incluye la imagen base64
                         'status': profile.status
                     }})
 
             return JsonResponse({'success': False, 'error': 'No se detectaron coincidencias.'})
 
+        except base64.binascii.Error as e:
+            logger.warning(f"Error decoding base64 image: {str(e)}")
+            return JsonResponse({'success': False, 'error': 'Error al decodificar la imagen.'})
         except Exception as e:
-            logger.warn(f"Unexpected error: {str(e)}")
+            logger.warning(f"Unexpected error: {str(e)}")
             return JsonResponse({'success': False, 'error': f'Error inesperado: {str(e)}'})
     else:
         return JsonResponse({'success': False, 'error': 'Verbo no POST recibido'})
-
 
 
 def profiles(request):
@@ -271,10 +266,10 @@ def edit_profile(request,id):
 
 
 def delete_profile(request,id):
-    logger.warn(f'deleting profile with id: {id}')
+    logger.warning(f'deleting profile with id: {id}')
     profile = Profile.objects.get(id=id)
     profile.delete()
-    logger.warn('profile succesfully deleted')
+    logger.warning('profile succesfully deleted')
     return redirect('profiles')
 
 

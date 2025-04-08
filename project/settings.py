@@ -1,4 +1,3 @@
-
 from pathlib import Path
 import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -14,7 +13,7 @@ SECRET_KEY = 'ci!=nl9#v4x=ve#$($=!h=bd9t)kl&*1_e)v)^_ln3d2g#pqqj'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*', 'ls-b072528c66b104c491fd8778a63fafcca67cbb76.cpmugqcuqty6.us-east-2.rds.amazonaws.com']
 
 CSRF_TRUSTED_ORIGINS = ['https://localhost:8000', 'https://pskcl74t-8000.use.devtunnels.ms/']
 
@@ -64,13 +63,22 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql', 
+        'NAME': 'faceapp',
+        'USER': 'admin',
+        'PASSWORD': 'contrasena08',
+        'HOST': 'faceapp.c5eey42wm77i.us-east-2.rds.amazonaws.com', 
+        'PORT': '3306',  
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -105,19 +113,33 @@ USE_L10N = True
 USE_TZ = True
 
 
+# AWS S3 Configuration
+AWS_ACCESS_KEY_ID = 'AKIA2MYIDRHYN45DVM5A'  # Verifica que esta clave sea correcta
+AWS_SECRET_ACCESS_KEY = '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'  # Verifica que esta clave sea correcta
+AWS_STORAGE_BUCKET_NAME = 'archivosfaceapp'  # Verifica que el nombre del bucket sea correcto
+AWS_S3_REGION_NAME = 'us-east-2'  # Verifica que la región sea correcta
+AWS_QUERYSTRING_AUTH = False  # Desactiva las URLs firmadas para archivos públicos
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/static/'
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+# Media files
+MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/media/'
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "static"),
-)
-  
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
-MEDIA_URL ='/media/'
+# STATICFILES_DIRS = (
+#     os.path.join(BASE_DIR, "static"),
+# )
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Directorio temporal para collectstatic
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 LOGGING = {
     'version': 1,

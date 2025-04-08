@@ -30,8 +30,10 @@
         <div class="row">
             <div class="col-md-4">
                 <div class="profile-img">
-                    {% if profile.image %}
-                        <img src="{{ profile.image.url }}" alt="" />
+                    {% if profile.image_base64 %}
+                        <img src="data:image/png;base64,{{ profile.image_base64 }}" alt="Imagen Base64" />
+                    {% elif profile.image %}
+                        <img src="{{ profile.image.url }}" alt="Imagen URL" />
                     {% else %}
                         <div style="width: 150px; height: 150px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center;">
                             <span>Sin Imagen</span>
@@ -177,74 +179,88 @@
                             processData: false,
                             contentType: false,
                             success: (resp) => {
-                                //alert(`Bienvenido ${resp.profile.first_name} ${resp.profile.last_name}`);
-                                window.scrollTo({
-                                        top: document.body.scrollHeight,
-                                        behavior: 'smooth'
-                                });
                                 console.log(resp); // Depuración: verifica la respuesta del servidor
                                 if (resp.success) {
-                                    // Actualiza la imagen del perfil
                                     const profileImgContainer = document.querySelector('.profile-img');
-                                    let profileImg = profileImgContainer.querySelector('img');
+                                    let profileImg = profileImgContainer ? profileImgContainer.querySelector('img') : null;
 
-                                    if (!profileImg) {
-                                        // Si no existe el elemento <img>, crea uno y reemplaza el cuadro "Sin Imagen"
-                                        profileImg = document.createElement('img');
-                                        profileImg.alt = '';
-                                        profileImgContainer.innerHTML = ''; // Limpia el contenido actual
-                                        profileImgContainer.appendChild(profileImg);
+                                    if (profileImgContainer) {
+                                        if (!profileImg) {
+                                            profileImg = document.createElement('img');
+                                            profileImg.alt = '';
+                                            profileImgContainer.innerHTML = ''; // Limpia el contenido actual
+                                            profileImgContainer.appendChild(profileImg);
+                                        }
+
+                                        if (resp.profile.image_base64) {
+                                            profileImg.src = `data:image/png;base64,${resp.profile.image_base64}`;
+                                        } else if (resp.profile.image_url) {
+                                            profileImg.src = resp.profile.image_url;
+                                        }
                                     }
 
-                                    profileImg.src = resp.profile.image_url;
-
-                                    
-
                                     // Actualiza la información del perfil
-                                    document.querySelector('.profile-tab #Nombre').textContent = `${resp.profile.first_name} ${resp.profile.last_name}`;
-                                    document.querySelector('.profile-tab #Empresa').textContent = resp.profile.transportista;
-                                    document.querySelector('.profile-tab #Rut').textContent = resp.profile.rut;
-                                    document.querySelector('.profile-tab #Email').textContent = resp.profile.email;
-                                    document.querySelector('.profile-tab #Phone').textContent = `0${resp.profile.phone}`;
-                                    document.querySelector('.profile-tab #Status').textContent = resp.profile.status;
+                                    const nombreElement = document.querySelector('.profile-tab #Nombre');
+                                    if (nombreElement) {
+                                        nombreElement.textContent = `${resp.profile.first_name} ${resp.profile.last_name}`;
+                                    }
 
-                                    // Actualiza el historial
+                                    const empresaElement = document.querySelector('.profile-tab #Empresa');
+                                    if (empresaElement) {
+                                        empresaElement.textContent = resp.profile.transportista;
+                                    }
+
+                                    const rutElement = document.querySelector('.profile-tab #Rut');
+                                    if (rutElement) {
+                                        rutElement.textContent = resp.profile.rut;
+                                    }
+
+                                    const emailElement = document.querySelector('.profile-tab #Email');
+                                    if (emailElement) {
+                                        emailElement.textContent = resp.profile.email;
+                                    }
+
+                                    const phoneElement = document.querySelector('.profile-tab #Phone');
+                                    if (phoneElement) {
+                                        phoneElement.textContent = `0${resp.profile.phone}`;
+                                    }
+
+                                    const statusElement = document.querySelector('.profile-tab #Status');
+                                    if (statusElement) {
+                                        statusElement.textContent = resp.profile.status;
+                                    }
+
+                                    // Actualiza el historial (si existe)
                                     const historyTable = document.querySelector('#profile tbody');
-                                    historyTable.innerHTML = ''; // Limpia el historial actual
+                                    if (historyTable) {
+                                        historyTable.innerHTML = ''; // Limpia el historial actual
 
-
-
-                                    if (resp.history && resp.history.length > 0) {
-                                        resp.history.forEach(face => {
-                                            const row = `
+                                        if (resp.history && resp.history.length > 0) {
+                                            resp.history.forEach(face => {
+                                                const row = `
+                                                    <tr>
+                                                        <th scope="row">-</th>
+                                                        <td>${face.last_face}</td>
+                                                        <td>${face.date}</td>
+                                                    </tr>
+                                                `;
+                                                historyTable.innerHTML += row;
+                                            });
+                                        } else {
+                                            historyTable.innerHTML = `
                                                 <tr>
-                                                    <th scope="row">-</th>
-                                                    <td>${face.last_face}</td>
-                                                    <td>${face.date}</td>
+                                                    <td colspan="3" class="text-center">No hay registros en el historial.</td>
                                                 </tr>
                                             `;
-                                            historyTable.innerHTML += row;
-                                        });
-                                    } else {
-                                        // Si no hay datos, muestra un mensaje
-                                        historyTable.innerHTML = `
-                                            <tr>
-                                                <td colspan="3" class="text-center">No hay registros en el historial.</td>
-                                            </tr>
-                                        `;
+                                        }
                                     }
 
                                     // Actualiza el ID del perfil en el contenedor
                                     const profileContainer = document.getElementById('idProfile');
-                                    if (profileContainer) {
+                                    if (profileContainer && resp.profile.id) {
                                         profileContainer.setAttribute('id', `idProfile-${resp.profile.id}`);
                                         profileContainer.setAttribute('data-id', resp.profile.id);
                                     }
-
-
-
-
-
                                 } else {
                                     alert(resp.error || 'No se detectaron rostros.');
                                 }

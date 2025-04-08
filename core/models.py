@@ -1,7 +1,5 @@
 from django.db import models
-
-
-
+import base64
 
 types = [('Zona Cero','Zona Cero'),('RM','RM')]
 class Profile(models.Model):
@@ -16,8 +14,14 @@ class Profile(models.Model):
     status = models.CharField(choices=types,max_length=20,null=True,blank=False,default='RM')
     present = models.BooleanField(default=False)
     image = models.ImageField()
+    image_base64 = models.TextField(null=True, blank=True)  # Almacena la imagen en formato base64
     updated = models.DateTimeField(auto_now=True)
     Patente = models.CharField(max_length=6, default='')
+
+    def save(self, *args, **kwargs):
+        # Elimina la lógica de conversión a base64 aquí
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.first_name +' '+self.last_name
 
