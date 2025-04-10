@@ -344,3 +344,15 @@ def fetch_profiles(request):
     }
     
     return JsonResponse(profiles_data, safe=False)
+
+
+    
+def update_profile(request):
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=request.user.profile)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'status': 'success'})
+        else:
+             return JsonResponse({'status': 'error', 'errors': form.errors})
+    return JsonResponse({'status': 'invalid request'})

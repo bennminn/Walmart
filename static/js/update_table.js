@@ -91,7 +91,7 @@ function updateTables(presentNotAssignedProfiles, assignedProfiles) {
 }
 
 // Polling interval to fetch new data every 10 seconds
-setInterval(fetchData, 10000);
+setInterval(fetchData, 7000);
 
 // Initial fetch
 fetchData();
