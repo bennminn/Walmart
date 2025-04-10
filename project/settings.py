@@ -13,7 +13,7 @@ SECRET_KEY = 'ci!=nl9#v4x=ve#$($=!h=bd9t)kl&*1_e)v)^_ln3d2g#pqqj'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*', 'ls-b072528c66b104c491fd8778a63fafcca67cbb76.cpmugqcuqty6.us-east-2.rds.amazonaws.com']
+ALLOWED_HOSTS = ['10.87.86.50', 'localhost', '127.0.0.1', '*']  # Agrega tu IP pública aquí
 
 CSRF_TRUSTED_ORIGINS = ['https://localhost:8000', 'https://pskcl74t-8000.use.devtunnels.ms/']
 
