@@ -3,7 +3,7 @@ from django.db import models
 
 
 
-types = [('Zona Cero','Zona Cero'),('RM','RM')]
+types = [('Alta','Alta'),('Baja','Baja')]
 class Profile(models.Model):
     rut = models.IntegerField(unique=True, default=0) 
     first_name = models.CharField(max_length=70)
@@ -13,8 +13,9 @@ class Profile(models.Model):
     email = models.EmailField(null=True, blank=True)
     Transportista = models.CharField(max_length=200)
     CodTransportista = models.IntegerField(default=0, null=True, blank=True)
-    status = models.CharField(choices=types,max_length=20,null=True,blank=False,default='RM')
+    status = models.CharField(choices=types,max_length=20,null=True,blank=False,default='Baja')
     present = models.BooleanField(default=False)
+    assigned = models.BooleanField(default=False)
     image = models.ImageField()
     updated = models.DateTimeField(auto_now=True)
     Patente = models.CharField(max_length=6, default='')

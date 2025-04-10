@@ -7,8 +7,7 @@
 <div class="container">
     <div class="text-center">
         <div class="embed-responsive embed-responsive-16by9">
-            <video autoplay="true" id="video-element" class="embed-responsive-item"
-            style='border: 2px solid #007bff;
+            <video autoplay="true" id="video-element" class="embed-responsive-item" style='border: 2px solid #007bff;
         border-radius: 8px;'></video>
         </div>
     </div>
@@ -27,100 +26,101 @@
 
 
 <div class="container emp-profile">
-        <div class="row">
-            <div class="col-md-4">
-                <div class="profile-img">
-                    {% if profile.image %}
-                        <img src="{{ profile.image.url }}" alt="" />
-                    {% else %}
-                        <div style="width: 150px; height: 150px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center;">
-                            <span>Sin Imagen</span>
-                        </div>
-                    {% endif %}
+    <div class="row">
+        <div class="col-md-4">
+            <div class="profile-img">
+                {% if profile.image %}
+                <img src="{{ profile.image.url }}" alt="" />
+                {% else %}
+                <div
+                    style="width: 150px; height: 150px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center;">
+                    <span>Sin Imagen</span>
                 </div>
-            </div>
-            <div class="col-md-6">
-                <div class="profile-head">
-                    {% comment %} <h5>
-                        {{profile.first_name}} {{profile.last_name}}
-                    </h5> {% endcomment %}
-                    
-                    <ul class="nav nav-tabs" id="myTab" role="tablist">
-                        <li class="nav-item">
-                            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab"
-                                aria-controls="home" aria-selected="true">Info</a>
-                        </li>
-                        
-                    </ul>
-                </div>
+                {% endif %}
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-4">
+        <div class="col-md-6">
+            <div class="profile-head">
+                {% comment %} <h5>
+                    {{profile.first_name}} {{profile.last_name}}
+                </h5> {% endcomment %}
 
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab"
+                            aria-controls="home" aria-selected="true">Info</a>
+                    </li>
+
+                </ul>
             </div>
-            <div class="col-md-8">
-                <div class="profile-tab" id="myTabContent">
-                    <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label>RUT</label>
-                            </div>
-                            <div class="col-md-6">
-                                <p id='Rut'>{{profile.rut}}</p>
-                            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+
+        </div>
+        <div class="col-md-8">
+            <div class="profile-tab" id="myTabContent">
+                <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>RUT</label>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label>Nombre</label>
-                            </div>
-                            <div class="col-md-6">
-                                <p  id='Nombre'>{{profile.first_name}} {{profile.last_name}}</p>
-                            </div>
+                        <div class="col-md-6">
+                            <p id='Rut'>{{profile.rut}}</p>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label>Email</label>
-                            </div>
-                            <div class="col-md-6">
-                                <p id='Email'>{{profile.email}}</p>
-                            </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Nombre</label>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label>Telefono</label>
-                            </div>
-                            <div class="col-md-6">
-                                <p id='Phone'>{{profile.phone}}</h7>
-                            </div>
+                        <div class="col-md-6">
+                            <p id='Nombre'>{{profile.first_name}} {{profile.last_name}}</p>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label>Transportista</label>
-                            </div>
-                            <div class="col-md-6">
-                                <p id='Empresa'>{{ profile.Transportista }}</p>
-                            </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Email</label>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label>Zona</label>
-                            </div>
-                            <div class="col-md-6">
-                                <p id='Status'>{{ profile.status }}</p>
-                            </div>
+                        <div class="col-md-6">
+                            <p id='Email'>{{profile.email}}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Telefono</label>
+                        </div>
+                        <div class="col-md-6">
+                            <p id='Phone'>{{profile.phone}}</h7>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Transportista</label>
+                        </div>
+                        <div class="col-md-6">
+                            <p id='Empresa'>{{ profile.Transportista }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Prioridad Zona Cero</label>
+                        </div>
+                        <div class="col-md-6">
+                            <p id='Status'>{{ profile.status }}</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 </div>
 
 <div id="welcome-message" class="welcome-message"></div>
 
 
 <script>
-    
+
     const getCookie = (name) => {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -135,135 +135,135 @@
         }
         return cookieValue;
     }
-    
+
     const csrftoken = getCookie('csrftoken');
-    
+
     const video = document.getElementById('video-element')
     const image = document.getElementById('img-element')
     const captureBtn = document.getElementById('capture-btn')
     const reloadBtn = document.getElementById('reload-btn')
-    
+
     reloadBtn.addEventListener('click', () => {
         window.location.reload()
     })
-    
+
     if (navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({video: true})
-        .then((stream) => {
-            video.srcObject = stream
-            const {height, width} = stream.getTracks()[0].getSettings()
-    
-            captureBtn.addEventListener('click', e => {
-                e.preventDefault();
-                captureBtn.classList.add('not-visible');
-                const track = stream.getVideoTracks()[0];
-                const imageCapture = new ImageCapture(track);
-            
-                imageCapture.takePhoto().then(blob => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(blob);
-                    reader.onloadend = () => {
-                        const base64data = reader.result;
-            
-                        const fd = new FormData();
-                        fd.append('csrfmiddlewaretoken', csrftoken);
-                        fd.append('photo', base64data);
-            
-                        $.ajax({
-                            type: 'POST',
-                            url: '/scan/', // Cambiar la URL para que apunte a la función scan
-                            enctype: 'multipart/form-data',
-                            data: fd,
-                            processData: false,
-                            contentType: false,
-                            success: (resp) => {
-                                //alert(`Bienvenido ${resp.profile.first_name} ${resp.profile.last_name}`);
-                                window.scrollTo({
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                video.srcObject = stream
+                const { height, width } = stream.getTracks()[0].getSettings()
+
+                captureBtn.addEventListener('click', e => {
+                    e.preventDefault();
+                    captureBtn.classList.add('not-visible');
+                    const track = stream.getVideoTracks()[0];
+                    const imageCapture = new ImageCapture(track);
+
+                    imageCapture.takePhoto().then(blob => {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(blob);
+                        reader.onloadend = () => {
+                            const base64data = reader.result;
+
+                            const fd = new FormData();
+                            fd.append('csrfmiddlewaretoken', csrftoken);
+                            fd.append('photo', base64data);
+
+                            $.ajax({
+                                type: 'POST',
+                                url: '/scan/', // Cambiar la URL para que apunte a la función scan
+                                enctype: 'multipart/form-data',
+                                data: fd,
+                                processData: false,
+                                contentType: false,
+                                success: (resp) => {
+                                    //alert(`Bienvenido ${resp.profile.first_name} ${resp.profile.last_name}`);
+                                    window.scrollTo({
                                         top: document.body.scrollHeight,
                                         behavior: 'smooth'
-                                });
-                                console.log(resp); // Depuración: verifica la respuesta del servidor
-                                if (resp.success) {
-                                    // Actualiza la imagen del perfil
-                                    const profileImgContainer = document.querySelector('.profile-img');
-                                    let profileImg = profileImgContainer.querySelector('img');
+                                    });
+                                    console.log(resp); // Depuración: verifica la respuesta del servidor
+                                    if (resp.success) {
+                                        // Actualiza la imagen del perfil
+                                        const profileImgContainer = document.querySelector('.profile-img');
+                                        let profileImg = profileImgContainer.querySelector('img');
 
-                                    if (!profileImg) {
-                                        // Si no existe el elemento <img>, crea uno y reemplaza el cuadro "Sin Imagen"
-                                        profileImg = document.createElement('img');
-                                        profileImg.alt = '';
-                                        profileImgContainer.innerHTML = ''; // Limpia el contenido actual
-                                        profileImgContainer.appendChild(profileImg);
-                                    }
+                                        if (!profileImg) {
+                                            // Si no existe el elemento <img>, crea uno y reemplaza el cuadro "Sin Imagen"
+                                            profileImg = document.createElement('img');
+                                            profileImg.alt = '';
+                                            profileImgContainer.innerHTML = ''; // Limpia el contenido actual
+                                            profileImgContainer.appendChild(profileImg);
+                                        }
 
-                                    profileImg.src = resp.profile.image_url;
-
-                                    
-
-                                    // Actualiza la información del perfil
-                                    document.querySelector('.profile-tab #Nombre').textContent = `${resp.profile.first_name} ${resp.profile.last_name}`;
-                                    document.querySelector('.profile-tab #Empresa').textContent = resp.profile.transportista;
-                                    document.querySelector('.profile-tab #Rut').textContent = resp.profile.rut;
-                                    document.querySelector('.profile-tab #Email').textContent = resp.profile.email;
-                                    document.querySelector('.profile-tab #Phone').textContent = `0${resp.profile.phone}`;
-                                    document.querySelector('.profile-tab #Status').textContent = resp.profile.status;
-
-                                    // Actualiza el historial
-                                    const historyTable = document.querySelector('#profile tbody');
-                                    historyTable.innerHTML = ''; // Limpia el historial actual
+                                        profileImg.src = resp.profile.image_url;
 
 
 
-                                    if (resp.history && resp.history.length > 0) {
-                                        resp.history.forEach(face => {
-                                            const row = `
+                                        // Actualiza la información del perfil
+                                        document.querySelector('.profile-tab #Nombre').textContent = `${resp.profile.first_name} ${resp.profile.last_name}`;
+                                        document.querySelector('.profile-tab #Empresa').textContent = resp.profile.transportista;
+                                        document.querySelector('.profile-tab #Rut').textContent = resp.profile.rut;
+                                        document.querySelector('.profile-tab #Email').textContent = resp.profile.email;
+                                        document.querySelector('.profile-tab #Phone').textContent = `0${resp.profile.phone}`;
+                                        document.querySelector('.profile-tab #Status').textContent = resp.profile.status;
+
+                                        // Actualiza el historial
+                                        const historyTable = document.querySelector('#profile tbody');
+                                        historyTable.innerHTML = ''; // Limpia el historial actual
+
+
+
+                                        if (resp.history && resp.history.length > 0) {
+                                            resp.history.forEach(face => {
+                                                const row = `
                                                 <tr>
                                                     <th scope="row">-</th>
                                                     <td>${face.last_face}</td>
                                                     <td>${face.date}</td>
                                                 </tr>
                                             `;
-                                            historyTable.innerHTML += row;
-                                        });
-                                    } else {
-                                        // Si no hay datos, muestra un mensaje
-                                        historyTable.innerHTML = `
+                                                historyTable.innerHTML += row;
+                                            });
+                                        } else {
+                                            // Si no hay datos, muestra un mensaje
+                                            historyTable.innerHTML = `
                                             <tr>
                                                 <td colspan="3" class="text-center">No hay registros en el historial.</td>
                                             </tr>
                                         `;
+                                        }
+
+                                        // Actualiza el ID del perfil en el contenedor
+                                        const profileContainer = document.getElementById('idProfile');
+                                        if (profileContainer) {
+                                            profileContainer.setAttribute('id', `idProfile-${resp.profile.id}`);
+                                            profileContainer.setAttribute('data-id', resp.profile.id);
+                                        }
+
+
+
+
+
+                                    } else {
+                                        alert(resp.error || 'No se detectaron rostros.');
                                     }
-
-                                    // Actualiza el ID del perfil en el contenedor
-                                    const profileContainer = document.getElementById('idProfile');
-                                    if (profileContainer) {
-                                        profileContainer.setAttribute('id', `idProfile-${resp.profile.id}`);
-                                        profileContainer.setAttribute('data-id', resp.profile.id);
-                                    }
-
-
-
-
-
-                                } else {
-                                    alert(resp.error || 'No se detectaron rostros.');
+                                },
+                                error: (err) => {
+                                    console.log('Error en la solicitud AJAX:', err);
                                 }
-                            },
-                            error: (err) => {
-                                console.log('Error en la solicitud AJAX:', err);
-                            }
-                        });
-                    };
-                }).catch(error => {
-                    console.log('takePhoto() error: ', error);
+                            });
+                        };
+                    }).catch(error => {
+                        console.log('takePhoto() error: ', error);
+                    });
                 });
+            })
+            .catch(error => {
+                console.log("Something went wrong!", error);
             });
-        })
-        .catch(error => {
-            console.log("Something went wrong!", error);
-        });
     }
-    
+
 </script>
 
 {% endblock content %}

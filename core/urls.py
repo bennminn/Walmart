@@ -18,4 +18,7 @@ urlpatterns = [
     path('reset/', views.reset, name='reset'),
 
     path('profile/<int:profile_id>/details/', views.profile_details, name='profile_details'),
+    path('profile_rut_to_id/<str:profile_rut>/', views.profile_rut_to_id, name='profile_rut_to_id'),
+    path('update_profile_assignment/<int:id>/', views.update_profile_assignment, name='update_profile_assignment'),
+    path('fetch_profiles/', views.fetch_profiles, name='fetch_profiles'),
 ]

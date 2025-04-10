@@ -1,6 +1,25 @@
+document.addEventListener('DOMContentLoaded', function() {
+    const presentNotAssignedTable = document.getElementById('present-not-assigned');
+
+    presentNotAssignedTable.addEventListener('click', function(event) {
+        const row = event.target.closest('tr');
+        if (row && row.classList.contains('not-assigned-profile-to-add')) {
+            showArrows(row);
+        }
+        //alert("accessing action");
+    });
+});
+
 function showArrows(row) {
     var actions = row.querySelector(".actions");
-    actions.style.display = actions.style.display === "none" ? "block" : "none";
+    console.log("Actions element:", actions); // Log the actions element
+    if (actions) {
+        console.log("Current display:", actions.style.display); // Log current display property
+        actions.style.display = actions.style.display === "none" ? "block" : "none";
+        console.log("New display:", actions.style.display); // Log new display property
+    } else {
+        console.error("Actions element not found");
+    }
 }
 
 function moveUp(button) {

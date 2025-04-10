@@ -7,7 +7,7 @@ function showProfileModal(profileId) {
                 var profile = data.profile;
                 var profileDetailsHtml = `
                     <h2>${profile.first_name} ${profile.last_name}</h2>
-                    <p>RUT: ${profile.rut}</p>
+                    <p id="rut">RUT: ${profile.rut}</p>
                     <p>Email: ${profile.email}</p>
                     <p>Phone: ${profile.phone}</p>
                     <p>Transportista: ${profile.transportista}</p>
@@ -28,3 +28,4 @@ function showProfileModal(profileId) {
 function closeProfileModal() {
     document.getElementById('profileModal').style.display = 'none';
 }
+

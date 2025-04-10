@@ -66,9 +66,6 @@ face_list_file = os.path.join(current_path, 'face_list.txt')
 sound = os.path.join(sound_folder, 'beep.wav')
 
 logger = logging.getLogger('face_attendance')
-logger.debug('This is a test debug message')
-logger.info('This is a test info message')
-logger.warn('This is a test warn message')
 
 def login_succes(request):
     data = {"mesg": "", "form": LoginForm()}
@@ -96,14 +93,19 @@ def logout_view(request):
 
 def index(request):
     scanned = LastFace.objects.all().order_by('-date')
+    # change present so that it looks for both present true and assigned false
     present = Profile.objects.filter(present=True).order_by('-updated')
     absent = Profile.objects.filter(present=False)
+    present_not_assigned = Profile.objects.filter(present=True, assigned=False).order_by('-updated')
+    assigned = Profile.objects.filter(assigned=True).order_by('-updated')
     history = StatusChangeHistory.objects.all().order_by('-date')  # Historial de cambios
 
     context = {
         'scanned': scanned,
         'present': present,
         'absent': absent,
+        'assigned': assigned,
+        'present_not_assigned': present_not_assigned,
         'history': history  # Agregar historial al contexto
     }
     return render(request, 'core/index.html', context)
@@ -175,10 +177,10 @@ def scan(request):
 
                     # Cambiar el status basado en el último viaje
                     previous_status = profile.status
-                    if previous_status == 'Zona Cero':
-                        profile.status = 'RM'
+                    if previous_status == 'Zona Cero' or previous_status == 'Alta':
+                        profile.status = 'Baja'
                     else:
-                        profile.status = 'Zona Cero'
+                        profile.status = 'Alta'
 
                     # Guardar el historial de cambios
                     StatusChangeHistory.objects.create(
@@ -217,15 +219,12 @@ def scan(request):
     else:
         return JsonResponse({'success': False, 'error': 'Verbo no POST recibido'})
 
-
-
 def profiles(request):
     profiles = Profile.objects.all()
     context = {
         'profiles': profiles
     }
     return render(request, 'core/profiles.html', context)
-
 
 def details(request):
     try:
@@ -240,7 +239,6 @@ def details(request):
         'last_face': last_face
     }
     return render(request, 'core/details.html', context)
-
 
 def add_profile(request):
     if request.method == 'POST':
@@ -257,7 +255,6 @@ def add_profile(request):
     context = {'form': form}
     return render(request, 'core/add_profile.html', context)
 
-
 def edit_profile(request,id):
     profile = Profile.objects.get(id=id)
     form = ProfileForm(instance=profile)
@@ -269,7 +266,6 @@ def edit_profile(request,id):
     context={'form':form}
     return render(request,'core/add_profile.html',context)
 
-
 def delete_profile(request,id):
     logger.warn(f'deleting profile with id: {id}')
     profile = Profile.objects.get(id=id)
@@ -277,18 +273,17 @@ def delete_profile(request,id):
     logger.warn('profile succesfully deleted')
     return redirect('profiles')
 
-
 def clear_history(request):
     history = LastFace.objects.all()
     history.delete()
     return redirect('index')
 
-
 def reset(request):
     profiles = Profile.objects.all()
     for profile in profiles:
-        if profile.present == True:
+        if profile.present == True or profile.assigned == True:
             profile.present = False
+            profile.assigned = False
             profile.save()
         else:
             pass
@@ -309,3 +304,43 @@ def profile_details(request, profile_id):
         return JsonResponse({'success': True, 'profile': profile_data})
     except Exception as e:
         return JsonResponse({'success': False, 'error': f'Error inesperado: {str(e)}'})
+        
+def update_profile_assignment(request, id):
+    if request.method == 'POST':  
+        try:
+            is_assigned = request.POST.get('is_assigned') == 'true'
+            profile = Profile.objects.get(id=id)
+            profile.assigned = is_assigned  
+            profile.save()
+            profile_data = {
+                    'rut': profile.rut,
+                    'present': profile.present,
+                    'assigned': profile.assigned,
+            }
+            return JsonResponse({'success': True, 'profile': profile_data})
+        except Exception as e:
+            logger.warn(f"assign update failed {str(e)}")
+            return JsonResponse({'success': False, 'error': f'Error inesperado: {str(e)}'})
+    else:
+        return JsonResponse({'success': False, 'error': f'Verbo http inesperado: {str(e)}'})
+
+def profile_rut_to_id(request, profile_rut):
+    try:
+        profile = Profile.objects.get(rut=profile_rut)
+        return JsonResponse({'success': True, 'profile_id': profile.id})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'Error inesperado: {str(e)}'})
+
+def fetch_profiles(request):
+    present_not_assigned = Profile.objects.filter(present=True, assigned=False).order_by('-updated')
+    assigned = Profile.objects.filter(present=True, assigned=True).order_by('-updated')
+    
+    present_not_assigned_data = list(present_not_assigned.values('rut', 'first_name', 'last_name', 'Transportista', 'updated', 'status', 'id'))
+    assigned_data = list(assigned.values('rut', 'first_name', 'last_name', 'Transportista', 'updated', 'status', 'id'))
+    
+    profiles_data = {
+        'present_not_assigned': present_not_assigned_data,
+        'assigned': assigned_data
+    }
+    
+    return JsonResponse(profiles_data, safe=False)
