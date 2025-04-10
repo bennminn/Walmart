@@ -13,9 +13,14 @@ SECRET_KEY = 'ci!=nl9#v4x=ve#$($=!h=bd9t)kl&*1_e)v)^_ln3d2g#pqqj'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['10.87.86.50', 'localhost', '127.0.0.1', '*']  # Agrega tu IP pública aquí
+ALLOWED_HOSTS = ['10.87.86.50', 'localhost', '127.0.0.1', '*', 'http://45-61-54-80.cloud-xip.com:8000/']  # Agrega tu IP pública aquí
 
-CSRF_TRUSTED_ORIGINS = ['https://localhost:8000', 'https://pskcl74t-8000.use.devtunnels.ms/']
+CSRF_TRUSTED_ORIGINS = [
+    'https://<subdominio>.ngrok.io',  # Reemplaza con la URL generada por ngrok
+    'https://localhost:8000',
+    'https://pskcl74t-8000.use.devtunnels.ms/',
+    'http://45-61-54-80.cloud-xip.com:8000/'
+]
 
 # Application definition
 
