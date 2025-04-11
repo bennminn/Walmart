@@ -1,26 +1,19 @@
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+# Cargar las variables de entorno del archivo .env
+load_dotenv()
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'ci!=nl9#v4x=ve#$($=!h=bd9t)kl&*1_e)v)^_ln3d2g#pqqj'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['10.87.86.50', 'localhost', '127.0.0.1', '*', 'http://45-61-54-80.cloud-xip.com:8000/']  # Agrega tu IP pública aquí
-
-CSRF_TRUSTED_ORIGINS = [
-    'https://<subdominio>.ngrok.io',  # Reemplaza con la URL generada por ngrok
-    'https://localhost:8000',
-    'https://pskcl74t-8000.use.devtunnels.ms/',
-    'http://45-61-54-80.cloud-xip.com:8000/'
-]
+# Usar las variables de entorno
+SECRET_KEY = os.getenv('SECRET_KEY')
+DEBUG = os.getenv('DEBUG') == 'True'  # Convierte a booleano
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
 
 # Application definition
 
@@ -74,14 +67,15 @@ WSGI_APPLICATION = 'project.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+# Configuración de la base de datos
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'faceapp',
-        'USER': 'admin',
-        'PASSWORD': 'contrasena08',
-        'HOST': 'faceapp.c5eey42wm77i.us-east-2.rds.amazonaws.com', 
-        'PORT': '3306',  
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -118,13 +112,13 @@ USE_L10N = True
 USE_TZ = True
 
 
-# AWS S3 Configuration
-AWS_ACCESS_KEY_ID = 'AKIA2MYIDRHYN45DVM5A'  # Verifica que esta clave sea correcta
-AWS_SECRET_ACCESS_KEY = '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'  # Verifica que esta clave sea correcta
-AWS_STORAGE_BUCKET_NAME = 'archivosfaceapp'  # Verifica que el nombre del bucket sea correcto
-AWS_S3_REGION_NAME = 'us-east-2'  # Verifica que la región sea correcta
-AWS_QUERYSTRING_AUTH = False  # Desactiva las URLs firmadas para archivos públicos
-AWS_S3_SIGNATURE_VERSION = 's3v4'
+# Configuración de AWS
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')
+AWS_QUERYSTRING_AUTH = os.getenv('AWS_QUERYSTRING_AUTH') == 'True'
+AWS_S3_SIGNATURE_VERSION = os.getenv('AWS_S3_SIGNATURE_VERSION')
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/static/'
