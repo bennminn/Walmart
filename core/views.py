@@ -15,6 +15,7 @@ from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
 from django.utils import timezone
 import logging
+import json
 # def find_user_view(request):
 #     if is_ajax(request):
 #         photo = request.POST.get('photo')
@@ -208,7 +209,8 @@ def scan(request):
                         'phone': profile.phone,
                         'transportista': profile.Transportista,
                         'image_url': profile.image.url,
-                        'status': profile.status
+                        'status': profile.status,
+                        'patente': profile.Patente
                     }})
 
             return JsonResponse({'success': False, 'error': 'No se detectaron coincidencias.'})
@@ -299,7 +301,8 @@ def profile_details(request, profile_id):
             'email': profile.email,
             'phone': profile.phone,
             'transportista': profile.Transportista,
-            'status': profile.status
+            'status': profile.status,
+            'patente': profile.Patente
         }
         return JsonResponse({'success': True, 'profile': profile_data})
     except Exception as e:
@@ -344,15 +347,62 @@ def fetch_profiles(request):
     }
     
     return JsonResponse(profiles_data, safe=False)
-
-
     
-def update_profile(request):
+def update_profile(request, id):
     if request.method == 'POST':
-        form = ProfileForm(request.POST, instance=request.user.profile)
-        if form.is_valid():
-            form.save()
-            return JsonResponse({'status': 'success'})
-        else:
-             return JsonResponse({'status': 'error', 'errors': form.errors})
+        try:
+            profile = Profile.objects.get(id=id)
+            
+            # Debug logging for request
+            logger.warning(f"Request content type: {request.content_type}")
+            logger.warning(f"Raw request body: {request.body}")
+            
+            # Get the data from POST or JSON
+            if 'application/json' in request.content_type:
+                import json
+                data = json.loads(request.body)
+                logger.warning(f"Parsed JSON data: {data}")
+            else:
+                data = request.POST
+                logger.warning(f"Form POST data: {data}")
+            
+            # Log available fields on the model
+            logger.warning(f"Available model fields: {[f.name for f in profile._meta.fields]}")
+            
+            # Track if we successfully updated any fields
+            updated = False
+            
+            # Find the field that's being updated
+            for field_name, new_value in data.items():
+                logger.warning(f"Checking field: {field_name}")
+                # Check if this field exists on the model
+                if hasattr(profile, field_name):
+                    logger.warning(f"Found field {field_name} on model")
+                    # Log the update
+                    old_value = getattr(profile, field_name)
+                    logger.warning(f"Updating {field_name}: {old_value} -> {new_value}")
+                    
+                    # Update the field
+                    setattr(profile, field_name, new_value)
+                    updated = True
+                else:
+                    logger.warning(f"Field {field_name} not found on model")
+            
+            # Save the profile if any fields were updated
+            if updated:
+                profile.save()
+                return JsonResponse({'status': 'success'})
+            else:
+                logger.warning("No fields were updated")
+                return JsonResponse({'status': 'error', 'error': 'No valid fields to update'})
+                
+        except Profile.DoesNotExist:
+            msg = 'Profile not found'
+            logger.warning(msg)
+            return JsonResponse({'status': 'error', 'error': msg})
+        except Exception as e:
+            msg = str(e)
+            logger.warning(f"Unexpected error: {str(e)}")
+            return JsonResponse({'status': 'error', 'error': msg})
+    
     return JsonResponse({'status': 'invalid request'})

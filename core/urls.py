@@ -21,5 +21,5 @@ urlpatterns = [
     path('profile_rut_to_id/<str:profile_rut>/', views.profile_rut_to_id, name='profile_rut_to_id'),
     path('update_profile_assignment/<int:id>/', views.update_profile_assignment, name='update_profile_assignment'),
     path('fetch_profiles/', views.fetch_profiles, name='fetch_profiles'),
-    path('update_profile_papeleta/', views.update_profile, name='update_profile_papeleta'),
+    path('update_profile/<int:id>/', views.update_profile, name='update_profile'),
 ]

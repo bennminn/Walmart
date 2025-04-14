@@ -148,7 +148,7 @@
                             <label>Patente Tractocamión</label>
                         </div>
                         <div class="col-md-4">
-                            <p id='Status'>{{ profile.patente }}</p>
+                            <p id='Patente'>{{ profile.patente }}</p>
                         </div>
                         <div class="col-md-4">
                             <button class="edit-btn">
@@ -252,10 +252,14 @@
                                         document.querySelector('.profile-tab #Email').textContent = resp.profile.email;
                                         document.querySelector('.profile-tab #Phone').textContent = `0${resp.profile.phone}`;
                                         document.querySelector('.profile-tab #Status').textContent = resp.profile.status;
+                                        document.querySelector('.profile-tab #Patente').textContent = resp.profile.patente;
 
                                         // Actualiza el historial
+
+                                        /*
                                         const historyTable = document.querySelector('#profile tbody');
                                         historyTable.innerHTML = ''; // Limpia el historial actual
+                                        
 
 
 
@@ -278,6 +282,7 @@
                                             </tr>
                                         `;
                                         }
+                                        */
 
                                         // Actualiza el ID del perfil en el contenedor
                                         const profileContainer = document.getElementById('idProfile');
