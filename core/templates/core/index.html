@@ -76,8 +76,7 @@
                             </thead>
                             <tbody id="present-not-assigned">
                                 {% for profile in present_not_assigned %}
-                                <tr class="not-assigned-profile-to-add" data-id="{{ profile.id }}"
-                                    onclick="showArrows(this)">
+                                <tr class="not-assigned-profile-to-add" data-id="{{ profile.id }}">
                                     <td><button onclick="showProfileModal('{{ profile.id }}')">+</button></td>
                                     <td>{{profile.rut}}</td>
                                     <td>{{profile.first_name}} {{profile.last_name}}</td>

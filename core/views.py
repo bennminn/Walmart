@@ -73,7 +73,7 @@ def login_succes(request):
     username = request.GET.get('username', '')
     if request.method == "POST":
         form = LoginForm(request.POST)
-        if form.is_valid:
+        if form.is_valid():
             username = request.POST.get("username")
             password = request.POST.get("password")
             user = authenticate(username=username, password=password)
@@ -121,45 +121,40 @@ def ajax(request):
 
 def scan(request):
     if request.method == 'POST':
-        logger.warn(f"Inspecting POST request: {type(request.POST)}")
+        logger.warning(f"Inspecting POST request: {type(request.POST)}")
         photo = request.POST.get('photo')
-        if not photo.startswith('data:image/'):
-            msg = 'Formato de imagen no válido'
-            logger.warn(msg)
+        if not photo or not photo.startswith('data:image/'):
+            msg = 'Formato de imagen no válido o imagen no proporcionada'
+            logger.warning(msg)
             return JsonResponse({'success': False, 'error': msg})
 
         _, str_img = photo.split(';base64')
 
         try:
             decoded_file = base64.b64decode(str_img)
-            logger.warn("Image decoded successfully")
+            logger.warning("Image decoded successfully")
 
-            # Guardar la imagen en la carpeta media
-            temp_image_path = os.path.join('media', 'temp_image.png')
-            with open(temp_image_path, 'wb') as f:
-                f.write(decoded_file)
-            logger.warn("Image saved to media folder")
-
-            # Cargar la imagen y realizar el reconocimiento facial
-            image = face_recognition.load_image_file(temp_image_path)
+            # Cargar la imagen directamente desde base64
+            image = face_recognition.load_image_file(ContentFile(decoded_file))
             face_locations = face_recognition.face_locations(image)
             face_encodings = face_recognition.face_encodings(image, face_locations)
 
             known_face_encodings = []
             known_face_names = []
 
-            # Cargar perfiles conocidos
+            # Cargar perfiles conocidos desde la base de datos
             profiles = Profile.objects.all()
             for profile in profiles:
-                person = profile.image
-                image_of_person = face_recognition.load_image_file(f'media/{person}')
-                person_face_encoding = face_recognition.face_encodings(image_of_person)
-                if person_face_encoding:
-                    known_face_encodings.append(person_face_encoding[0])
-                    known_face_names.append(profile.first_name + " " + profile.last_name)
-                else:
-                    logger.warn(f"No face encoding found for profile: {profile.id}")
-            logger.warn(f"Known face names: {known_face_names}")
+                if profile.image_base64:
+                    decoded_image = base64.b64decode(profile.image_base64)
+                    image_of_person = face_recognition.load_image_file(ContentFile(decoded_image))
+                    person_face_encoding = face_recognition.face_encodings(image_of_person)
+                    if person_face_encoding:
+                        known_face_encodings.append(person_face_encoding[0])
+                        known_face_names.append(profile.first_name + " " + profile.last_name)
+                    else:
+                        logger.warning(f"No face encoding found for profile: {profile.id}")
+            logger.warning(f"Known face names: {known_face_names}")
 
             face_names = []
             for face_encoding in face_encodings:
@@ -202,21 +197,25 @@ def scan(request):
                     )
 
                     return JsonResponse({'success': True, 'profile': {
+                        'id': profile.id,  # Asegúrate de incluir el ID del perfil
                         'rut': profile.rut,
                         'first_name': profile.first_name,
                         'last_name': profile.last_name,
                         'email': profile.email,
                         'phone': profile.phone,
                         'transportista': profile.Transportista,
-                        'image_url': profile.image.url,
+                        'image_base64': profile.image_base64,  # Incluye la imagen base64
                         'status': profile.status,
                         'patente': profile.Patente
                     }})
 
             return JsonResponse({'success': False, 'error': 'No se detectaron coincidencias.'})
 
+        except base64.binascii.Error as e:
+            logger.warning(f"Error decoding base64 image: {str(e)}")
+            return JsonResponse({'success': False, 'error': 'Error al decodificar la imagen.'})
         except Exception as e:
-            logger.warn(f"Unexpected error: {str(e)}")
+            logger.warning(f"Unexpected error: {str(e)}")
             return JsonResponse({'success': False, 'error': f'Error inesperado: {str(e)}'})
     else:
         return JsonResponse({'success': False, 'error': 'Verbo no POST recibido'})
@@ -244,12 +243,16 @@ def details(request):
 
 def add_profile(request):
     if request.method == 'POST':
+        logger.warning(f"Received POST request with data: {json.dumps(request.POST.dict())}, files: {request.FILES.dict()}")
         form = ProfileForm(request.POST, request.FILES)
         if form.is_valid():
+            logger.warning("form valido")
             form.save()
+            logger.warning("form valido y guardado")
             messages.success(request, 'El perfil se ha guardado correctamente.')
             return redirect('profiles')  # Redirige a la lista de perfiles después de guardar
         else:
+            logger.warning("form INvalido")
             messages.error(request, 'Hubo un error al guardar el perfil. Por favor, verifica los datos ingresados.')
     else:
         form = ProfileForm()
@@ -269,10 +272,10 @@ def edit_profile(request,id):
     return render(request,'core/add_profile.html',context)
 
 def delete_profile(request,id):
-    logger.warn(f'deleting profile with id: {id}')
+    logger.warning(f'deleting profile with id: {id}')
     profile = Profile.objects.get(id=id)
     profile.delete()
-    logger.warn('profile succesfully deleted')
+    logger.warning('profile succesfully deleted')
     return redirect('profiles')
 
 def clear_history(request):

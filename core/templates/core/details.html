@@ -26,12 +26,13 @@
 
 
 <div class="container emp-profile">
-
     <div class="row">
         <div class="col-md-4">
             <div class="profile-img">
-                {% if profile.image %}
-                <img src="{{ profile.image.url }}" alt="" />
+                {% if profile.image_base64 %}
+                <img src="data:image/png;base64,{{ profile.image_base64 }}" alt="Imagen Base64" />
+                {% elif profile.image %}
+                <img src="{{ profile.image.url }}" alt="Imagen URL" />
                 {% else %}
                 <div
                     style="width: 150px; height: 150px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center;">
@@ -42,7 +43,6 @@
         </div>
         <div class="col-md-6">
             <div class="profile-head">
-
                 {% comment %} <h5>
                     {{profile.first_name}} {{profile.last_name}}
                 </h5> {% endcomment %}
@@ -50,10 +50,10 @@
                 <ul class="nav nav-tabs" id="myTab" role="tablist">
                     <li class="nav-item">
                         <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab"
-                            aria-controls="home" aria-selected="true">Información de papeleta</a>
+                            aria-controls="home" aria-selected="true">Info</a>
                     </li>
-                </ul>
 
+                </ul>
             </div>
         </div>
     </div>
@@ -222,36 +222,56 @@
                                 processData: false,
                                 contentType: false,
                                 success: (resp) => {
-                                    //alert(`Bienvenido ${resp.profile.first_name} ${resp.profile.last_name}`);
-                                    window.scrollTo({
-                                        top: document.body.scrollHeight,
-                                        behavior: 'smooth'
-                                    });
                                     console.log(resp); // Depuración: verifica la respuesta del servidor
                                     if (resp.success) {
-                                        // Actualiza la imagen del perfil
                                         const profileImgContainer = document.querySelector('.profile-img');
-                                        let profileImg = profileImgContainer.querySelector('img');
+                                        let profileImg = profileImgContainer ? profileImgContainer.querySelector('img') : null;
 
-                                        if (!profileImg) {
-                                            // Si no existe el elemento <img>, crea uno y reemplaza el cuadro "Sin Imagen"
-                                            profileImg = document.createElement('img');
-                                            profileImg.alt = '';
-                                            profileImgContainer.innerHTML = ''; // Limpia el contenido actual
-                                            profileImgContainer.appendChild(profileImg);
+                                        if (profileImgContainer) {
+                                            if (!profileImg) {
+                                                profileImg = document.createElement('img');
+                                                profileImg.alt = '';
+                                                profileImgContainer.innerHTML = ''; // Limpia el contenido actual
+                                                profileImgContainer.appendChild(profileImg);
+                                            }
+
+                                            if (resp.profile.image_base64) {
+                                                profileImg.src = `data:image/png;base64,${resp.profile.image_base64}`;
+                                            } else if (resp.profile.image_url) {
+                                                profileImg.src = resp.profile.image_url;
+                                            }
                                         }
 
-                                        profileImg.src = resp.profile.image_url;
-
-
-
                                         // Actualiza la información del perfil
-                                        document.querySelector('.profile-tab #Nombre').textContent = `${resp.profile.first_name} ${resp.profile.last_name}`;
-                                        document.querySelector('.profile-tab #Empresa').textContent = resp.profile.transportista;
-                                        document.querySelector('.profile-tab #Rut').textContent = resp.profile.rut;
-                                        document.querySelector('.profile-tab #Email').textContent = resp.profile.email;
-                                        document.querySelector('.profile-tab #Phone').textContent = `0${resp.profile.phone}`;
-                                        document.querySelector('.profile-tab #Status').textContent = resp.profile.status;
+                                        const nombreElement = document.querySelector('.profile-tab #Nombre');
+                                        if (nombreElement) {
+                                            nombreElement.textContent = `${resp.profile.first_name} ${resp.profile.last_name}`;
+                                        }
+
+                                        const empresaElement = document.querySelector('.profile-tab #Empresa');
+                                        if (empresaElement) {
+                                            empresaElement.textContent = resp.profile.transportista;
+                                        }
+
+                                        const rutElement = document.querySelector('.profile-tab #Rut');
+                                        if (rutElement) {
+                                            rutElement.textContent = resp.profile.rut;
+                                        }
+
+                                        const emailElement = document.querySelector('.profile-tab #Email');
+                                        if (emailElement) {
+                                            emailElement.textContent = resp.profile.email;
+                                        }
+
+                                        const phoneElement = document.querySelector('.profile-tab #Phone');
+                                        if (phoneElement) {
+                                            phoneElement.textContent = `0${resp.profile.phone}`;
+                                        }
+
+                                        const statusElement = document.querySelector('.profile-tab #Status');
+                                        if (statusElement) {
+                                            statusElement.textContent = resp.profile.status;
+                                        }
                                         document.querySelector('.profile-tab #Patente').textContent = resp.profile.patente;
 
                                         // Actualiza el historial
@@ -286,15 +306,10 @@
 
                                         // Actualiza el ID del perfil en el contenedor
                                         const profileContainer = document.getElementById('idProfile');
-                                        if (profileContainer) {
+                                        if (profileContainer && resp.profile.id) {
                                             profileContainer.setAttribute('id', `idProfile-${resp.profile.id}`);
                                             profileContainer.setAttribute('data-id', resp.profile.id);
                                         }
-
-
-
-
-
                                     } else {
                                         alert(resp.error || 'No se detectaron rostros.');
                                     }
