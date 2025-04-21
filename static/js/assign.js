@@ -28,7 +28,6 @@ async function assignDriver() {
 				});
 
 				if(profile_assign_update.success){
-					console.log('Profile updated successfully');
 					window.location.href = '/';
 				} else {
 					console.log('Error in AJAX request:', profile_assign_update);

@@ -21,4 +21,10 @@ urlpatterns = [
     path('profile_rut_to_id/<str:profile_rut>/', views.profile_rut_to_id, name='profile_rut_to_id'),
     path('update_profile_assignment/<int:id>/', views.update_profile_assignment, name='update_profile_assignment'),
     path('fetch_profiles/', views.fetch_profiles, name='fetch_profiles'),
+    path('dashboard/', views.dashboard, name='dashboard'),
+
+    
+    path('bulk-create-profiles/', views.bulk_create_profiles, name='bulk_create_profiles'),
+    path('simulate-profile-activity/', views.simulate_profile_activity, name='simulate_profile_activity'),
+    path('barebones-scan/', views.barebones_scan_view, name='barebones_scan'),
 ]

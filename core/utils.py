@@ -1,100 +1,120 @@
-# import face_recognition as fr
-# import numpy as np
-# from models import Profile
-# from PIL import Image, ImageOps
+from django.http import JsonResponse
+import random
+from datetime import timedelta, datetime, timezone
+from core.models import Profile, AvailabilitySnapshotHistory
+
+import logging
+
+logger = logging.getLogger('face_attendance')
+
+def simulate_monthly_activity():
+    profiles = Profile.objects.all()
+    start_date = datetime.now(timezone.utc) - timedelta(hours=4)
+    
+    # Clear previous incorrect data
+    AvailabilitySnapshotHistory.objects.all().delete()
+    
+    for day in range(30):
+        current_date = start_date + timedelta(days=day)
+        logger.warn(f"start date {start_date} became current date {current_date}")
+        for profile in profiles:
+            # Start of the day: profile is not present and not assigned
+            start_time = current_date.replace(hour=0, minute=0, second=0)
+            logger.warn(f"day begins time {start_time}")
+            profile.present = False
+            profile.assigned = False
+            profile.save()
+            
+            AvailabilitySnapshotHistory.objects.create(
+                profile=profile,
+                present_snapshot=profile.present,
+                assigned_snapshot=profile.assigned,
+                date=start_time
+            )
+            
+            # Profile becomes present
+            arrival_time = start_time + timedelta(hours=random.randint(6, 9))  # Random arrival time between 6 AM and 9 AM
+            logger.warn(f"driver arrival time {arrival_time}")
+            profile.present = True
+            profile.assigned = False
+            profile.save()
+            
+            AvailabilitySnapshotHistory.objects.create(
+                profile=profile,
+                present_snapshot=profile.present,
+                assigned_snapshot=profile.assigned,
+                date=arrival_time
+            )
+            
+            # Simulate trips throughout the day
+            num_trips = random.randint(1, 5)  # Random number of trips
+            for _ in range(num_trips):
+                trip_start_time = arrival_time + timedelta(hours=random.randint(1, 3))  # Random trip start time
+                trip_end_time = trip_start_time + timedelta(hours=random.randint(1, 2))  # Random trip duration
+                logger.warn(f"trip start  time {trip_start_time}")
+                logger.warn(f"trip end time {trip_end_time}")
+                
+                # Profile is assigned and then unassigned
+                profile.assigned = True
+                profile.save()
+                
+                AvailabilitySnapshotHistory.objects.create(
+                    profile=profile,
+                    present_snapshot=profile.present,
+                    assigned_snapshot=profile.assigned,
+                    date=trip_start_time
+                )
+                
+                profile.assigned = False
+                profile.save()
+                
+                AvailabilitySnapshotHistory.objects.create(
+                    profile=profile,
+                    present_snapshot=profile.present,
+                    assigned_snapshot=profile.assigned,
+                    date=trip_end_time
+                )
+            
+            # End of the day: profile is not present and not assigned
+            end_time = start_time + timedelta(hours=random.randint(17, 20))  # Random end time between 5 PM and 8 PM
+            logger.warn(f"day end time {end_time}\n")
+            profile.present = False
+            profile.assigned = False
+            profile.save()
+            
+            AvailabilitySnapshotHistory.objects.create(
+                profile=profile,
+                present_snapshot=profile.present,
+                assigned_snapshot=profile.assigned,
+                date=end_time
+            )
 
 
-# def is_ajax(request):
-#   return request.headers.get('x-requested-with') == 'XMLHttpRequest'
 
-
-# def get_encoded_faces():
-#     """
-#     This function loads all user 
-#     profile images and encodes their faces
-#     """
-#     # Retrieve all user profiles from the database
-#     qs = Profile.objects.all()
-
-#     # Create a dictionary to hold the encoded face for each user
-#     encoded = {}
-
-#     for p in qs:
-#         # Initialize the encoding variable with None
-#         encoding = None
-
-#         # Load the user's profile image
-#         face = fr.load_image_file(p.photo.path)
-
-#         # Encode the face (if detected)
-#         face_encodings = fr.face_encodings(face)
-#         if len(face_encodings) > 0:
-#             encoding = face_encodings[0]
-#         else:
-#             print("No face found in the image")
-
-#         # Add the user's encoded face to the dictionary if encoding is not None
-#         if encoding is not None:
-#             encoded[p.user.username] = encoding
-
-#     # Return the dictionary of encoded faces
-#     return encoded
-
-
-# def classify_face(img):
-#     """
-#     This function takes an image as input and returns the name of the face it contains
-#     """
-#     # Load all the known faces and their encodings
-#     faces = get_encoded_faces()
-#     faces_encoded = list(faces.values())
-#     known_face_names = list(faces.keys())
-
-#     # Load the input image
-#     try:
-#         # Open the image and ensure it is in RGB format
-#         with Image.open(img) as image:
-#             image = image.convert('RGB')  # Convert to RGB format
-#             img_array = np.array(image)  # Convert to numpy array
-
-#         # Validate the image format
-#         if img_array.dtype != np.uint8 or len(img_array.shape) != 3 or img_array.shape[2] != 3:
-#             print(f"Invalid image format: shape={img_array.shape}, dtype={img_array.dtype}")
-#             return False
-
-#         # Debugging output
-#         print(f"Image shape: {img_array.shape}, dtype: {img_array.dtype}")
-#     except Exception as e:
-#         print(f"Error loading image: {e}")
-#         return False
-
-#     try:
-#         # Find the locations of all faces in the input image
-#         face_locations = fr.face_locations(img_array)
-
-#         # Encode the faces in the input image
-#         unknown_face_encodings = fr.face_encodings(img_array, face_locations)
-
-#         # Identify the faces in the input image
-#         face_names = []
-#         for face_encoding in unknown_face_encodings:
-#             # Compare the encoding of the current face to the encodings of all known faces
-#             matches = fr.compare_faces(faces_encoded, face_encoding)
-
-#             # Find the known face with the closest encoding to the current face
-#             face_distances = fr.face_distance(faces_encoded, face_encoding)
-#             best_match_index = np.argmin(face_distances)
-
-#             # If the closest known face is a match for the current face, label the face with the known name
-#             if matches[best_match_index]:
-#                 name = known_face_names[best_match_index]
-#             else:
-#                 name = "Unknown"
-
-#             face_names.append(name)
-
-#         # Return the name of the first face in the input image
-#         return face_names[0]
-#     except Exception as e:
-#         print(f"Error processing image: {e}")
-#         return False
+def barebones_scan(request):
+    if request.method == 'POST':
+        profile_id = request.POST.get('profile_id')
+        try:
+            profile = Profile.objects.get(id=profile_id)
+            profile.present = True
+            profile.save()
+            
+            AvailabilitySnapshotHistory.objects.create(
+                profile=profile,
+                present_snapshot=profile.present,
+                assigned_snapshot=profile.assigned,
+            )
+            
+            return JsonResponse({'success': True, 'profile': {
+                'rut': profile.rut,
+                'first_name': profile.first_name,
+                'last_name': profile.last_name,
+                'email': profile.email,
+                'phone': profile.phone,
+                'transportista': profile.Transportista,
+                'status': profile.status
+            }})
+        except Profile.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Profile not found'})
+    else:
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})

@@ -1,6 +1,4 @@
 from django.shortcuts import render, HttpResponse, redirect
-from .models import *
-from .forms import *
 import face_recognition
 import numpy as np
 from django.db.models import Q
@@ -14,50 +12,13 @@ from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
 from django.utils import timezone
+
 import logging
-# def find_user_view(request):
-#     if is_ajax(request):
-#         photo = request.POST.get('photo')
-#         if not photo.startswith('data:image/'):
-#             print("Invalid image format")
-#             return JsonResponse({'success': False, 'error': 'Invalid image format'})
+from .models import *
+from .forms import *
+from core.management.commands.create_bulk_profiles import Command as CreateBulkProfilesCommand
+from core.utils import simulate_monthly_activity, barebones_scan
 
-#         _, str_img = photo.split(';base64')
-
-#         try:
-#             decoded_file = base64.b64decode(str_img)
-#             print(f"Decoded file: {decoded_file[:100]}")  # Muestra los primeros 100 bytes del archivo
-
-#             x = Log()
-#             x.photo.save('upload.png', ContentFile(decoded_file))
-#             x.save()
-
-#             print(f"Saved image path: {x.photo.path}")  # Verifica la ruta de la imagen guardada
-
-#             # Verifica que la imagen sea válida antes de clasificarla
-#             try:
-#                 with Image.open(x.photo.path) as img:
-#                     img.verify()  # Verifica que el archivo sea una imagen válida
-#                     print(f"Image verified successfully: {x.photo.path}")
-#             except Exception as e:
-#                 print(f"Invalid image file: {e}")
-#                 return JsonResponse({'success': False, 'error': 'Invalid image file'})
-
-#             res = classify_face(x.photo.path)
-#             if res:
-#                 user_exists = User.objects.filter(username=res).exists()
-#                 if user_exists:
-#                     user = User.objects.get(username=res)
-#                     profile = Profile.objects.get(user=user)
-#                     x.profile = profile
-#                     x.save()
-
-#                     login(request, user)
-#                     return JsonResponse({'success': True})
-#             return JsonResponse({'success': False})
-#         except Exception as e:
-#             print(f"Error processing image: {e}")
-#             return JsonResponse({'success': False, 'error': str(e)})
 
 last_face = 'no_face'
 current_path = os.path.dirname(__file__)
@@ -191,7 +152,14 @@ def scan(request):
 
                     # Actualizar el estado del perfil
                     profile.present = True
+                    profile.assigned = False
                     profile.save()
+                    AvailabilitySnapshotHistory.objects.create(
+                        profile=profile,
+                        present_snapshot=profile.present,
+                        assigned_snapshot=profile.assigned,
+                    )
+
 
                     # Crear un registro en LastFace
                     LastFace.objects.create(
@@ -317,6 +285,11 @@ def update_profile_assignment(request, id):
                     'present': profile.present,
                     'assigned': profile.assigned,
             }
+            AvailabilitySnapshotHistory.objects.create(
+                profile=profile,
+                present_snapshot=profile.present,
+                assigned_snapshot=profile.assigned,
+            )
             return JsonResponse({'success': True, 'profile': profile_data})
         except Exception as e:
             logger.warn(f"assign update failed {str(e)}")
@@ -344,3 +317,21 @@ def fetch_profiles(request):
     }
     
     return JsonResponse(profiles_data, safe=False)
+
+def dashboard(request):
+    # get/create graphs??
+    return render(request, 'core/dashboard.html')
+
+
+def bulk_create_profiles(request):
+    command = CreateBulkProfilesCommand()
+    command.handle()
+    return HttpResponse('Bulk profiles created successfully')
+
+def simulate_profile_activity(request):
+    simulate_monthly_activity()
+    return HttpResponse('Profile activity simulated successfully')
+
+def barebones_scan_view(request):
+    return barebones_scan(request)
+

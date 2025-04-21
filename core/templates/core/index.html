@@ -52,7 +52,15 @@
             <a class="nav-link" id="history-tab" data-toggle="tab" href="#history" role="tab" aria-controls="contact"
                 aria-selected="false">Historial</a>
         </li>
+        <!-- <button href="{% url 'dashboard' %}">Dashboard</button> -->
+
+        <a href="{% url 'dashboard' %}">
+            <input type="submit" class="btn btn-secondary btn-block m-2" name="btnAddMore" value="Dashboard" />
+        </a>
+
     </ul>
+
+
 
 
     <div class="tab-content" id="myTabContent">

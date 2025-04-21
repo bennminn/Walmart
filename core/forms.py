@@ -28,6 +28,6 @@ class ProfileForm(forms.ModelForm):
         rut = self.cleaned_data.get('rut')
         if not rut or rut <= 0:
             raise ValidationError('El RUT debe ser un número positivo.')
-        if len(str(rut)) > 8:
+        if len(str(rut)) > 9:
             raise ValidationError('El RUT no puede tener más de 8 dígitos.')
         return rut

@@ -1,0 +1,85 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/details.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+<div class="container emp-profile" style="max-width: 90%;">
+
+	<div class="row">
+		<div class="col-12 col-md-3 text-center">
+			<img src="{% static 'img/dashboard.svg' %}" alt="" class="img-fluid" style="max-width: 50%;">
+			<h6 class="text-muted p-1">Dashboard</h6>
+		</div>
+		<div class="col-12 col-md-6">
+			<div class="profile-head">
+				<!-- Puedes agregar contenido aquí si es necesario -->
+			</div>
+		</div>
+		<div class="col-12 col-md-3 text-center">
+			<a href="{% url 'index' %}">
+				<input type="submit" class="btn btn-secondary btn-block m-2" name="btnAddMore" value="Inicio" />
+			</a>
+		</div>
+	</div>
+	<hr>
+	<ul class="nav nav-tabs" id="myTab" role="tablist">
+		<li class="nav-item" role="presentation">
+			<a class="nav-link active" id="registros-hora-tab" data-toggle="tab" href="#registros-hora" role="tab"
+				aria-controls="registros-dia" aria-selected="true">Registros por día</a>
+		</li>
+		<li class="nav-item" role="presentation">
+			<a class="nav-link" id="asignaciones-hora-tab" data-toggle="tab" href="#asignaciones-hora" role="tab"
+				aria-controls="asignaciones-dia" aria-selected="false">Asignaciones por día</a>
+		</li>
+		<li class="nav-item" role="presentation">
+			<a class="nav-link" id="analisis-conductor-tab" data-toggle="tab" href="#analisis-conductor" role="tab"
+				aria-controls="analisis-conductor" aria-selected="false">Analisis por conductor</a>
+		</li>
+		<li class="nav-item" role="presentation">
+			<a class="nav-link" id="analisis-dia-tab" data-toggle="tab" href="#analisis-dia" role="tab"
+				aria-controls="analisis-dia" aria-selected="false">Analisis por día</a>
+		</li>
+	</ul>
+
+	<div class="tab-content" id="myTabContent">
+		<br>
+		<div class="tab-pane fade show active" id="registros-hora" role="tabpanel" aria-labelledby="registros-hora-tab">
+			<div class="row">
+				<div class="col-md-6">
+					<h5>Registros por hora</h5>
+				</div>
+			</div>
+		</div>
+
+		<div class="tab-pane fade" id="asignaciones-hora" role="tabpanel" aria-labelledby="asignaciones-hora-tab">
+			<h5>Asignaciones por hora</h5>
+		</div>
+
+		<div class="tab-pane fade" id="analisis-conductor" role="tabpanel" aria-labelledby="analisis-conductor-tab">
+			<h5>Analisis por conductor</h5>
+		</div>
+
+		<div class="tab-pane fade" id="analisis-dia" role="tabpanel" aria-labelledby="analisis-dia-tab">
+			<h5>Analisis por día</h5>
+			<div class="row">
+				<div class="col-md-6">
+					<input type="text" id="datepicker" class="form-control" placeholder="Select a date">
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+	$(function () {
+		$("#datepicker").datepicker();
+	});
+</script>
+
+{% endblock %}
