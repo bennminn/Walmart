@@ -15,6 +15,11 @@ from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
 from django.utils import timezone
 import logging
+import xml.etree.ElementTree as ET
+import requests
+from datetime import datetime, timedelta
+import json
+
 # def find_user_view(request):
 #     if is_ajax(request):
 #         photo = request.POST.get('photo')
@@ -69,6 +74,359 @@ logger = logging.getLogger('face_attendance')
 logger.debug('This is a test debug message')
 logger.info('This is a test info message')
 logger.warning('This is a test warn message')
+
+def call_soap_api(profile):
+    """
+    Llama a la API SOAP con los datos del perfil encontrado
+    Retorna un diccionario con el estado de la operación y guarda el registro en BD
+    """
+    # Variables para el log
+    soap_log = None
+    http_status = None
+    
+    try:
+        # Validar que el perfil tenga los datos mínimos necesarios
+        if not profile or not hasattr(profile, 'rut') or not profile.rut:
+            error_msg = 'Perfil inválido o sin RUT'
+            # Crear log de error de validación
+            SoapApiLog.objects.create(
+                profile=profile if profile else None,
+                fh_ingreso='',
+                cod_site='',
+                rut_conductor='',
+                nom_conductor='',
+                tracto='',
+                rut_transporte='',
+                nom_transporte='',
+                estado='FAILED',
+                respuesta_api='',
+                error_mensaje=error_msg,
+                http_status=None
+            )
+            return {
+                'success': False,
+                'estado': 'FAILED',
+                'error': error_msg
+            }
+        
+        # Generar timestamp actual en formato exacto requerido: "20250623 17:00:00"
+        fh = datetime.now().strftime("%Y%m%d %H:%M:%S")
+        cod_site = "6009"  # Valor fijo según tu ejemplo
+        
+        # Datos del perfil con validaciones
+        rut_conductor = str(profile.rut).strip()
+        nom_conductor = f"{profile.first_name or ''} {profile.last_name or ''}".strip()
+        tracto = str(getattr(profile, 'Patente', '') or '').strip()
+        rut_transporte = str(getattr(profile, 'CodTransportista', '') or '').strip()
+        nom_transporte = str(profile.Transportista or '').strip()
+        
+        # Validar datos críticos
+        if not rut_conductor:
+            error_msg = 'RUT del conductor es requerido'
+            SoapApiLog.objects.create(
+                profile=profile,
+                fh_ingreso=fh,
+                cod_site=cod_site,
+                rut_conductor=rut_conductor,
+                nom_conductor=nom_conductor,
+                tracto=tracto,
+                rut_transporte=rut_transporte,
+                nom_transporte=nom_transporte,
+                estado='FAILED',
+                respuesta_api='',
+                error_mensaje=error_msg,
+                http_status=None
+            )
+            return {
+                'success': False,
+                'estado': 'FAILED',
+                'error': error_msg
+            }
+        
+        if not nom_conductor or nom_conductor.strip() == '':
+            error_msg = 'Nombre del conductor es requerido'
+            SoapApiLog.objects.create(
+                profile=profile,
+                fh_ingreso=fh,
+                cod_site=cod_site,
+                rut_conductor=rut_conductor,
+                nom_conductor=nom_conductor,
+                tracto=tracto,
+                rut_transporte=rut_transporte,
+                nom_transporte=nom_transporte,
+                estado='FAILED',
+                respuesta_api='',
+                error_mensaje=error_msg,
+                http_status=None
+            )
+            return {
+                'success': False,
+                'estado': 'FAILED',
+                'error': error_msg
+            }
+        
+        soap_body = f"""
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <inserta_registro_conductor xmlns="http://tempuri.org/">
+      <fh_ingreso>{fh}</fh_ingreso>
+      <cod_site>{cod_site}</cod_site>
+      <rut_conductor>{rut_conductor}</rut_conductor>
+      <nom_conductor>{nom_conductor}</nom_conductor>
+      <tracto>{tracto}</tracto>
+      <rut_transporte>{rut_transporte}</rut_transporte>
+      <nom_transporte>{nom_transporte}</nom_transporte>
+    </inserta_registro_conductor>
+  </soap:Body>
+</soap:Envelope>
+"""
+        
+        headers = {
+            'Content-Type': 'text/xml; charset=utf-8',
+            'SOAPAction': 'http://tempuri.org/inserta_registro_conductor',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
+            'Proxy-Connection': 'Keep-Alive',
+            'Server': 'Microsoft-IIS/7.5'
+        }
+        
+        url = "http://ww2.qanalytics.cl/wm_consultaviajes/qviajes.asmx"
+        
+        # Log de los parámetros que se enviarán
+        logger.warning(f"Parámetros SOAP - fh: {fh}, cod_site: {cod_site}, rut_conductor: {rut_conductor}, nom_conductor: {nom_conductor}, tracto: {tracto}, rut_transporte: {rut_transporte}, nom_transporte: {nom_transporte}")
+        logger.warning(f"Llamando a API SOAP para perfil: {nom_conductor}")
+        
+        response = requests.post(url, data=soap_body, headers=headers, timeout=30)
+        http_status = response.status_code
+        
+        # Procesar la respuesta XML según el código de estado
+        if response.status_code == 200:
+            try:
+                # Respuesta exitosa - procesar normalmente
+                root = ET.fromstring(response.content)
+                response_dict = {child.tag: child.text for child in root.iter()}
+                response_json = json.dumps(response_dict, indent=4)
+                
+                json_text = response_json.replace("\\n", "").replace("\\", "")
+                json_data = json.loads(json_text)
+                xml_content = json_data.get("{http://tempuri.org/}inserta_registro_conductorResult", "UNKNOWN")
+                
+                # Determinar el estado basado en la respuesta
+                estado = "SUCCESS" if xml_content and ("success" in xml_content.lower() or "ok" in xml_content.lower() or "exitoso" in xml_content.lower()) else "FAILED"
+                
+                logger.warning(f"API SOAP response (200): {xml_content}, Estado: {estado}")
+                
+                # Guardar log en base de datos
+                SoapApiLog.objects.create(
+                    profile=profile,
+                    fh_ingreso=fh,
+                    cod_site=cod_site,
+                    rut_conductor=rut_conductor,
+                    nom_conductor=nom_conductor,
+                    tracto=tracto,
+                    rut_transporte=rut_transporte,
+                    nom_transporte=nom_transporte,
+                    estado=estado,
+                    respuesta_api=xml_content,
+                    error_mensaje=None if estado == 'SUCCESS' else xml_content,
+                    http_status=http_status
+                )
+                
+                return {
+                    'success': True,
+                    'estado': estado,
+                    'response': xml_content,
+                    'data': {
+                        "fh": fh,
+                        "cod_site": cod_site,
+                        "rut_conductor": rut_conductor,
+                        "nom_conductor": nom_conductor,
+                        "tracto": tracto,
+                        "rut_transporte": rut_transporte,
+                        "nom_transporte": nom_transporte,
+                        "respuesta_api": xml_content
+                    }
+                }
+            except (ET.ParseError, json.JSONDecodeError, KeyError) as e:
+                logger.warning(f"Error procesando respuesta XML/JSON (200): {str(e)}")
+                error_msg = f'Error procesando respuesta: {str(e)}'
+                
+                # Guardar log de error de procesamiento
+                SoapApiLog.objects.create(
+                    profile=profile,
+                    fh_ingreso=fh,
+                    cod_site=cod_site,
+                    rut_conductor=rut_conductor,
+                    nom_conductor=nom_conductor,
+                    tracto=tracto,
+                    rut_transporte=rut_transporte,
+                    nom_transporte=nom_transporte,
+                    estado='FAILED',
+                    respuesta_api=response.text[:1000],  # Primeros 1000 caracteres
+                    error_mensaje=error_msg,
+                    http_status=http_status
+                )
+                
+                return {
+                    'success': False,
+                    'estado': 'FAILED',
+                    'error': error_msg,
+                    'raw_response': response.text[:500]  # Primeros 500 caracteres para debug
+                }
+                
+        elif response.status_code == 500:
+            try:
+                # Error del servidor - extraer faultstring
+                root = ET.fromstring(response.content)
+                response_dict = {child.tag: child.text for child in root.iter()}
+                response_json = json.dumps(response_dict, indent=4)
+                
+                json_text = response_json.replace("\\n", "").replace("\\", "")
+                json_data = json.loads(json_text)
+                xml_content = json_data.get("faultstring", "Error del servidor desconocido")
+                
+                logger.warning(f"API SOAP error (500): {xml_content}")
+                
+                # Guardar log de error del servidor
+                SoapApiLog.objects.create(
+                    profile=profile,
+                    fh_ingreso=fh,
+                    cod_site=cod_site,
+                    rut_conductor=rut_conductor,
+                    nom_conductor=nom_conductor,
+                    tracto=tracto,
+                    rut_transporte=rut_transporte,
+                    nom_transporte=nom_transporte,
+                    estado='FAILED',
+                    respuesta_api=xml_content,
+                    error_mensaje=f'Error del servidor: {xml_content}',
+                    http_status=http_status
+                )
+                
+                return {
+                    'success': False,
+                    'estado': 'FAILED',
+                    'response': xml_content,
+                    'error': f'Error del servidor: {xml_content}',
+                    'data': {
+                        "fh": fh,
+                        "cod_site": cod_site,
+                        "rut_conductor": rut_conductor,
+                        "nom_conductor": nom_conductor,
+                        "tracto": tracto,
+                        "rut_transporte": rut_transporte,
+                        "nom_transporte": nom_transporte,
+                        "respuesta_api": xml_content
+                    }
+                }
+            except (ET.ParseError, json.JSONDecodeError, KeyError) as e:
+                logger.warning(f"Error procesando respuesta de error (500): {str(e)}")
+                error_msg = f'Error del servidor - No se pudo procesar: {str(e)}'
+                
+                # Guardar log de error de procesamiento del error 500
+                SoapApiLog.objects.create(
+                    profile=profile,
+                    fh_ingreso=fh,
+                    cod_site=cod_site,
+                    rut_conductor=rut_conductor,
+                    nom_conductor=nom_conductor,
+                    tracto=tracto,
+                    rut_transporte=rut_transporte,
+                    nom_transporte=nom_transporte,
+                    estado='FAILED',
+                    respuesta_api=response.text[:1000],
+                    error_mensaje=error_msg,
+                    http_status=http_status
+                )
+                
+                return {
+                    'success': False,
+                    'estado': 'FAILED',
+                    'error': error_msg,
+                    'raw_response': response.text[:500]
+                }
+        else:
+            # Otros códigos de estado HTTP
+            logger.warning(f"Error en API SOAP: Status {response.status_code}")
+            error_msg = f'HTTP {response.status_code}: {response.text[:200]}'
+            
+            # Guardar log de otros errores HTTP
+            SoapApiLog.objects.create(
+                profile=profile,
+                fh_ingreso=fh,
+                cod_site=cod_site,
+                rut_conductor=rut_conductor,
+                nom_conductor=nom_conductor,
+                tracto=tracto,
+                rut_transporte=rut_transporte,
+                nom_transporte=nom_transporte,
+                estado='FAILED',
+                respuesta_api=response.text[:1000],
+                error_mensaje=error_msg,
+                http_status=http_status
+            )
+            
+            return {
+                'success': False,
+                'estado': 'FAILED',
+                'error': error_msg
+            }
+            
+    except requests.exceptions.Timeout:
+        logger.warning("Timeout en llamada a API SOAP")
+        error_msg = 'Timeout en la conexión'
+        
+        # Guardar log de timeout
+        try:
+            SoapApiLog.objects.create(
+                profile=profile,
+                fh_ingreso=fh if 'fh' in locals() else '',
+                cod_site=cod_site if 'cod_site' in locals() else '',
+                rut_conductor=rut_conductor if 'rut_conductor' in locals() else '',
+                nom_conductor=nom_conductor if 'nom_conductor' in locals() else '',
+                tracto=tracto if 'tracto' in locals() else '',
+                rut_transporte=rut_transporte if 'rut_transporte' in locals() else '',
+                nom_transporte=nom_transporte if 'nom_transporte' in locals() else '',
+                estado='FAILED',
+                respuesta_api='',
+                error_mensaje=error_msg,
+                http_status=None
+            )
+        except:
+            pass  # Si falla el log, no interrumpir el flujo
+            
+        return {
+            'success': False,
+            'estado': 'FAILED',
+            'error': error_msg
+        }
+    except Exception as e:
+        logger.warning(f"Error inesperado en API SOAP: {str(e)}")
+        error_msg = f'Error inesperado: {str(e)}'
+        
+        # Guardar log de error inesperado
+        try:
+            SoapApiLog.objects.create(
+                profile=profile,
+                fh_ingreso=fh if 'fh' in locals() else '',
+                cod_site=cod_site if 'cod_site' in locals() else '',
+                rut_conductor=rut_conductor if 'rut_conductor' in locals() else '',
+                nom_conductor=nom_conductor if 'nom_conductor' in locals() else '',
+                tracto=tracto if 'tracto' in locals() else '',
+                rut_transporte=rut_transporte if 'rut_transporte' in locals() else '',
+                nom_transporte=nom_transporte if 'nom_transporte' in locals() else '',
+                estado='FAILED',
+                respuesta_api='',
+                error_mensaje=error_msg,
+                http_status=None
+            )
+        except:
+            pass  # Si falla el log, no interrumpir el flujo
+            
+        return {
+            'success': False,
+            'estado': 'FAILED',
+            'error': error_msg
+        }
 
 def login_succes(request):
     data = {"mesg": "", "form": LoginForm()}
@@ -190,6 +548,10 @@ def scan(request):
                         date=timezone.now()
                     )
 
+                    # Llamar a la API SOAP con los datos del perfil
+                    soap_response = call_soap_api(profile)
+                    logger.warning(f"SOAP API response: {soap_response}")
+
                     return JsonResponse({'success': True, 'profile': {
                         'id': profile.id,  # Asegúrate de incluir el ID del perfil
                         'rut': profile.rut,
@@ -200,6 +562,11 @@ def scan(request):
                         'transportista': profile.Transportista,
                         'image_base64': profile.image_base64,  # Incluye la imagen base64
                         'status': profile.status
+                    }, 'soap_api': {
+                        'estado': soap_response.get('estado', 'UNKNOWN'),
+                        'success': soap_response.get('success', False),
+                        'response': soap_response.get('response', ''),
+                        'error': soap_response.get('error', '')
                     }})
 
             return JsonResponse({'success': False, 'error': 'No se detectaron coincidencias.'})
@@ -304,3 +671,21 @@ def profile_details(request, profile_id):
         return JsonResponse({'success': True, 'profile': profile_data})
     except Exception as e:
         return JsonResponse({'success': False, 'error': f'Error inesperado: {str(e)}'})
+
+def profile_rut_to_id(request, rut):
+    try:
+        profile = Profile.objects.get(rut=rut)
+        return JsonResponse({'success': True, 'profile_id': profile.id})
+    except Profile.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Profile not found'}, status=404)
+
+def soap_logs(request):
+    """
+    Vista para mostrar el historial de llamadas a la API SOAP
+    """
+    logs = SoapApiLog.objects.all().order_by('-fecha_llamada')[:100]  # Últimos 100 registros
+    
+    context = {
+        'logs': logs
+    }
+    return render(request, 'core/soap_logs.html', context)

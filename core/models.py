@@ -16,7 +16,7 @@ class Profile(models.Model):
     image = models.ImageField()
     image_base64 = models.TextField(null=True, blank=True)  # Almacena la imagen en formato base64
     updated = models.DateTimeField(auto_now=True)
-    Patente = models.CharField(max_length=6, default='')
+    Patente = models.CharField(max_length=6, default='HHMM77')
 
     def save(self, *args, **kwargs):
         # Elimina la lógica de conversión a base64 aquí
@@ -43,3 +43,36 @@ class StatusChangeHistory(models.Model):
 
     def __str__(self):
         return f"{self.profile.first_name} {self.profile.last_name}: {self.previous_status} -> {self.new_status}"
+
+
+class SoapApiLog(models.Model):
+    """
+    Modelo para registrar todas las llamadas a la API SOAP
+    """
+    ESTADO_CHOICES = [
+        ('SUCCESS', 'Éxito'),
+        ('FAILED', 'Fallido'),
+        ('UNKNOWN', 'Desconocido'),
+    ]
+    
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='soap_logs')
+    fh_ingreso = models.CharField(max_length=20)  # Formato: "20250702 14:30:00"
+    cod_site = models.CharField(max_length=10)
+    rut_conductor = models.CharField(max_length=20)
+    nom_conductor = models.CharField(max_length=200)
+    tracto = models.CharField(max_length=20, blank=True)
+    rut_transporte = models.CharField(max_length=20, blank=True)
+    nom_transporte = models.CharField(max_length=200, blank=True)
+    estado = models.CharField(max_length=10, choices=ESTADO_CHOICES)
+    respuesta_api = models.TextField()  # Respuesta completa de la API
+    error_mensaje = models.TextField(blank=True, null=True)  # Mensaje de error si aplica
+    http_status = models.IntegerField(null=True, blank=True)  # Código HTTP de respuesta
+    fecha_llamada = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-fecha_llamada']
+        verbose_name = 'Registro API SOAP'
+        verbose_name_plural = 'Registros API SOAP'
+    
+    def __str__(self):
+        return f"{self.nom_conductor} - {self.estado} ({self.fecha_llamada.strftime('%Y-%m-%d %H:%M')})"

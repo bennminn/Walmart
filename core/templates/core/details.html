@@ -3,13 +3,16 @@
 {% block content %}
 
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="{% static 'js/update_profile_papeleta.js' %}"></script>
+<!-- Carga face-api.js primero -->
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+
 
 <div class="container">
     <div class="text-center">
-        <div class="embed-responsive embed-responsive-16by9">
-            <video autoplay="true" id="video-element" class="embed-responsive-item"
-            style='border: 2px solid #007bff;
-        border-radius: 8px;'></video>
+        <div class="embed-responsive embed-responsive-16by9" style="position:relative;">
+            <video autoplay="true" id="video-element" class="embed-responsive-item" style="border: 2px solid #007bff; border-radius: 8px;"></video>
+            <canvas id="overlay" style="position:absolute; top:0; left:0; z-index:10;"></canvas>
         </div>
     </div>
 
@@ -27,102 +30,166 @@
 
 
 <div class="container emp-profile">
-        <div class="row">
-            <div class="col-md-4">
-                <div class="profile-img">
-                    {% if profile.image_base64 %}
-                        <img src="data:image/png;base64,{{ profile.image_base64 }}" alt="Imagen Base64" />
-                    {% elif profile.image %}
-                        <img src="{{ profile.image.url }}" alt="Imagen URL" />
-                    {% else %}
-                        <div style="width: 150px; height: 150px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center;">
-                            <span>Sin Imagen</span>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="profile-head">
-                    {% comment %} <h5>
-                        {{profile.first_name}} {{profile.last_name}}
-                    </h5> {% endcomment %}
-                    
-                    <ul class="nav nav-tabs" id="myTab" role="tablist">
-                        <li class="nav-item">
-                            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab"
-                                aria-controls="home" aria-selected="true">Info</a>
-                        </li>
-                        
-                    </ul>
-                </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="profile-img">
+                {% if profile.image_base64 %}
+                    <img src="data:image/png;base64,{{ profile.image_base64 }}" alt="Imagen Base64" style="width: 150px; height: 150px; border-radius: 8px; object-fit: cover; border: 2px solid #007bff;">
+                {% elif profile.image %}
+                    <img src="{{ profile.image.url }}" alt="Imagen URL" style="width: 150px; height: 150px; border-radius: 8px; object-fit: cover; border: 2px solid #007bff;">
+                {% else %}
+                    <div style="width: 150px; height: 150px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center;">
+                        <span>Sin Imagen</span>
+                    </div>
+                {% endif %}
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-4">
+        <div class="col-md-6">
+            <div class="profile-head">
+
+                {% comment %} <h5>
+                    {{profile.first_name}} {{profile.last_name}}
+                </h5> {% endcomment %}
+
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab"
+                            aria-controls="home" aria-selected="true">Información de papeleta</a>
+                    </li>
+                </ul>
 
             </div>
-            <div class="col-md-8">
-                <div class="profile-tab" id="myTabContent">
-                    <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label>RUT</label>
-                            </div>
-                            <div class="col-md-6">
-                                <p id='Rut'>{{profile.rut}}</p>
-                            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+
+        </div>
+        <div class="col-md-8">
+            <div class="profile-tab" id="myTabContent">
+                <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>RUT</label>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label>Nombre</label>
-                            </div>
-                            <div class="col-md-6">
-                                <p  id='Nombre'>{{profile.first_name}} {{profile.last_name}}</p>
-                            </div>
+                        <div class="col-md-4">
+                            <p id='Rut'>{{profile.rut}}</p>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label>Email</label>
-                            </div>
-                            <div class="col-md-6">
-                                <p id='Email'>{{profile.email}}</p>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label>Telefono</label>
-                            </div>
-                            <div class="col-md-6">
-                                <p id='Phone'>{{profile.phone}}</h7>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label>Transportista</label>
-                            </div>
-                            <div class="col-md-6">
-                                <p id='Empresa'>{{ profile.Transportista }}</p>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label>Zona</label>
-                            </div>
-                            <div class="col-md-6">
-                                <p id='Status'>{{ profile.status }}</p>
-                            </div>
+                        <div class="col-md-4">
+                            <button class="block-btn">
+                                <img src="{% static 'img/padlock.svg' %}" class="icon">
+                            </button>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>Nombre</label>
+                        </div>
+                        <div class="col-md-4">
+                            <p id='Nombre'>{{profile.first_name}} {{profile.last_name}}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="block-btn">
+                                <img src="{% static 'img/padlock.svg' %}" class="icon">
+                            </button>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>Email</label>
+                        </div>
+                        <div class="col-md-4">
+                            <p id='Email'>{{profile.email}}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="edit-btn">
+                                <img src="{% static 'img/edit_pen.svg' %}" class="icon">
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>Telefono</label>
+                        </div>
+                        <div class="col-md-4">
+                            <p id='Phone'>{{profile.phone}}</h7>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="edit-btn">
+                                <img src="{% static 'img/edit_pen.svg' %}" class="icon">
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>Transportista</label>
+                        </div>
+                        <div class="col-md-4">
+                            <p id='Empresa'>{{ profile.Transportista }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="block-btn">
+                                <img src="{% static 'img/padlock.svg' %}" class="icon">
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>Prioridad Zona Cero</label>
+                        </div>
+                        <div class="col-md-4">
+                            <p id='Status'>{{ profile.status }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="block-btn">
+                                <img src="{% static 'img/padlock.svg' %}" class="icon">
+                            </button>
+                        </div>
+                    </div>
+<!-- 
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>Patente Tractocamión</label>
+                        </div>
+                        <div class="col-md-4">
+                            <p id='Patente'>{{ profile.Patente }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="edit-btn">
+                                <img src="{% static 'img/edit_pen.svg' %}" class="icon">
+                            </button>
+                        </div>
+                    </div>
+                --> 
                 </div>
             </div>
         </div>
+    </div>
 </div>
 
-<div id="welcome-message" class="welcome-message"></div>
+<div id="success-animation" style="display:none;">
+    <div class="checkmark-circle">
+        <div class="background"></div>
+        <div class="checkmark draw"></div>
+    </div>
+    <div class="success-text">¡Reconocimiento exitoso!</div>
+    <div class="soap-status" style="margin-top: 15px; font-size: 1rem; color: #fff; text-align: center;">
+        <span id="soap-status-text"></span>
+    </div>
+</div>
+
+<!-- Cambia el texto del loading spinner -->
+<div id="loading-spinner" style="display:none;">
+    <div class="spinner"></div>
+    <div class="loading-text">Reconociendo patrones faciales...</div>
+</div>
+
 
 
 <script>
-    
+
     const getCookie = (name) => {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -137,149 +204,447 @@
         }
         return cookieValue;
     }
-    
+
     const csrftoken = getCookie('csrftoken');
-    
+
     const video = document.getElementById('video-element')
     const image = document.getElementById('img-element')
     const captureBtn = document.getElementById('capture-btn')
     const reloadBtn = document.getElementById('reload-btn')
-    
+    const loadingSpinner = document.getElementById('loading-spinner')
+
     reloadBtn.addEventListener('click', () => {
         window.location.reload()
     })
-    
+
     if (navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({video: true})
-        .then((stream) => {
-            video.srcObject = stream
-            const {height, width} = stream.getTracks()[0].getSettings()
-    
-            captureBtn.addEventListener('click', e => {
-                e.preventDefault();
-                captureBtn.classList.add('not-visible');
-                const track = stream.getVideoTracks()[0];
-                const imageCapture = new ImageCapture(track);
-            
-                imageCapture.takePhoto().then(blob => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(blob);
-                    reader.onloadend = () => {
-                        const base64data = reader.result;
-            
-                        const fd = new FormData();
-                        fd.append('csrfmiddlewaretoken', csrftoken);
-                        fd.append('photo', base64data);
-            
-                        $.ajax({
-                            type: 'POST',
-                            url: '/scan/', // Cambiar la URL para que apunte a la función scan
-                            enctype: 'multipart/form-data',
-                            data: fd,
-                            processData: false,
-                            contentType: false,
-                            success: (resp) => {
-                                console.log(resp); // Depuración: verifica la respuesta del servidor
-                                if (resp.success) {
-                                    const profileImgContainer = document.querySelector('.profile-img');
-                                    let profileImg = profileImgContainer ? profileImgContainer.querySelector('img') : null;
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                video.srcObject = stream
+                const { height, width } = stream.getTracks()[0].getSettings()
 
-                                    if (profileImgContainer) {
-                                        if (!profileImg) {
-                                            profileImg = document.createElement('img');
-                                            profileImg.alt = '';
-                                            profileImgContainer.innerHTML = ''; // Limpia el contenido actual
-                                            profileImgContainer.appendChild(profileImg);
-                                        }
+                captureBtn.addEventListener('click', e => {
+                    e.preventDefault();
+                    captureBtn.classList.add('not-visible');
+                    const track = stream.getVideoTracks()[0];
+                    const imageCapture = new ImageCapture(track);
 
-                                        if (resp.profile.image_base64) {
-                                            profileImg.src = `data:image/png;base64,${resp.profile.image_base64}`;
-                                        } else if (resp.profile.image_url) {
-                                            profileImg.src = resp.profile.image_url;
-                                        }
-                                    }
+                    imageCapture.takePhoto().then(blob => {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(blob);
+                        reader.onloadend = () => {
+                            const base64data = reader.result;
 
-                                    // Actualiza la información del perfil
-                                    const nombreElement = document.querySelector('.profile-tab #Nombre');
-                                    if (nombreElement) {
-                                        nombreElement.textContent = `${resp.profile.first_name} ${resp.profile.last_name}`;
-                                    }
+                            const fd = new FormData();
+                            fd.append('csrfmiddlewaretoken', csrftoken);
+                            fd.append('photo', base64data);
 
-                                    const empresaElement = document.querySelector('.profile-tab #Empresa');
-                                    if (empresaElement) {
-                                        empresaElement.textContent = resp.profile.transportista;
-                                    }
+                            $.ajax({
+                                type: 'POST',
+                                url: '/scan/', // Cambiar la URL para que apunte a la función scan
+                                enctype: 'multipart/form-data',
+                                data: fd,
+                                processData: false,
+                                contentType: false,
+                                beforeSend: () => {
+                                    // Mostrar el spinner y ocultar el resto del contenido
+                                    loadingSpinner.style.display = 'flex';
+                                    document.querySelector('.container').style.display = 'none';
+                                },
+                                success: (resp) => {
+                                    // Mostrar spinner
+                                    const spinner = document.getElementById('loading-spinner');
+                                    spinner.style.display = 'flex';
 
-                                    const rutElement = document.querySelector('.profile-tab #Rut');
-                                    if (rutElement) {
-                                        rutElement.textContent = resp.profile.rut;
-                                    }
+                                    setTimeout(() => {
+                                        spinner.style.display = 'none';
 
-                                    const emailElement = document.querySelector('.profile-tab #Email');
-                                    if (emailElement) {
-                                        emailElement.textContent = resp.profile.email;
-                                    }
+                                        if (resp.success) {
+                                            // Verificar estado de la API SOAP
+                                            const soapStatus = resp.soap_api ? resp.soap_api.estado : 'UNKNOWN';
+                                            const soapSuccess = resp.soap_api ? resp.soap_api.success : false;
+                                            const soapError = resp.soap_api ? resp.soap_api.error : '';
+                                            const soapResponse = resp.soap_api ? resp.soap_api.response : '';
+                                            
+                                            console.log('SOAP API Status:', soapStatus);
+                                            console.log('SOAP API Success:', soapSuccess);
+                                            console.log('SOAP API Error:', soapError);
+                                            console.log('SOAP API Response:', soapResponse);
+                                            
+                                            // Mostrar animación de éxito y fondo verde
+                                            const anim = document.getElementById('success-animation');
+                                            const successText = document.querySelector('.success-text');
+                                            const soapStatusElement = document.getElementById('soap-status-text');
+                                            
+                                            // Actualizar el texto según el estado de la API SOAP
+                                            if (soapStatus === 'SUCCESS') {
+                                                successText.textContent = '¡Reconocimiento exitoso!';
+                                                soapStatusElement.textContent = 'Registro enviado correctamente al sistema.';
+                                                soapStatusElement.style.color = '#fff';
+                                                document.body.style.background = '#0f0';
+                                            } else {
+                                                successText.textContent = '¡Reconocimiento exitoso!';
+                                                // Mostrar el error específico si está disponible
+                                                if (soapError) {
+                                                    soapStatusElement.textContent = `Error: ${soapError}`;
+                                                } else if (soapResponse) {
+                                                    soapStatusElement.textContent = `Error del sistema: ${soapResponse}`;
+                                                } else {
+                                                    soapStatusElement.textContent = 'Advertencia: Error al enviar registro al sistema externo.';
+                                                }
+                                                soapStatusElement.style.color = '#fff';
+                                                document.body.style.background = '#f90'; // Color naranja para advertencia
+                                            }
+                                            
+                                            anim.style.display = 'flex';
 
-                                    const phoneElement = document.querySelector('.profile-tab #Phone');
-                                    if (phoneElement) {
-                                        phoneElement.textContent = `0${resp.profile.phone}`;
-                                    }
+                                            // Hacer scroll cuando la animación ya es visible
+                                            setTimeout(() => {
+                                                window.scrollTo({
+                                                    top: document.body.scrollHeight,
+                                                    behavior: 'smooth'
+                                                });
 
-                                    const statusElement = document.querySelector('.profile-tab #Status');
-                                    if (statusElement) {
-                                        statusElement.textContent = resp.profile.status;
-                                    }
+                                                anim.classList.add('hide');
+                                                document.body.style.background = '';
+                                                setTimeout(() => {
+                                                    anim.style.display = 'none';
+                                                    anim.classList.remove('hide');
+                                                }, 500);
+                                            }, 3000); // Aumentado a 3 segundos para dar tiempo a leer el mensaje
 
-                                    // Actualiza el historial (si existe)
-                                    const historyTable = document.querySelector('#profile tbody');
-                                    if (historyTable) {
-                                        historyTable.innerHTML = ''; // Limpia el historial actual
+                                            // Actualiza la imagen del perfil
+                                            const profileImgContainer = document.querySelector('.profile-img');
+                                            let profileImg = profileImgContainer ? profileImgContainer.querySelector('img') : null;
 
-                                        if (resp.history && resp.history.length > 0) {
-                                            resp.history.forEach(face => {
-                                                const row = `
+                                            if (profileImgContainer) {
+                                                if (!profileImg) {
+                                                    profileImg = document.createElement('img');
+                                                    profileImg.alt = '';
+                                                    profileImg.style.width = '150px';
+                                                    profileImg.style.height = '150px';
+                                                    profileImg.style.borderRadius = '8px';
+                                                    profileImg.style.objectFit = 'cover';
+                                                    profileImg.style.border = '2px solid #007bff';
+                                                    profileImgContainer.innerHTML = '';
+                                                    profileImgContainer.appendChild(profileImg);
+                                                }
+
+                                                if (resp.profile.image_base64) {
+                                                    profileImg.src = `data:image/png;base64,${resp.profile.image_base64}`;
+                                                } else if (resp.profile.image_url) {
+                                                    profileImg.src = resp.profile.image_url;
+                                                }
+                                            }
+
+
+                                            // Actualiza la información del perfil
+                                            document.querySelector('.profile-tab #Nombre').textContent = `${resp.profile.first_name} ${resp.profile.last_name}`;
+                                            document.querySelector('.profile-tab #Empresa').textContent = resp.profile.transportista;
+                                            document.querySelector('.profile-tab #Rut').textContent = resp.profile.rut;
+                                            document.querySelector('.profile-tab #Email').textContent = resp.profile.email;
+                                            document.querySelector('.profile-tab #Phone').textContent = `0${resp.profile.phone}`;
+                                            document.querySelector('.profile-tab #Status').textContent = resp.profile.status;
+                                            document.querySelector('.profile-tab #Patente').textContent = resp.profile.Patente;
+
+                                            // Actualiza el historial
+
+                                            /*
+                                            const historyTable = document.querySelector('#profile tbody');
+                                            historyTable.innerHTML = ''; // Limpia el historial actual
+                                            
+
+
+
+                                            if (resp.history && resp.history.length > 0) {
+                                                resp.history.forEach(face => {
+                                                    const row = `
                                                     <tr>
                                                         <th scope="row">-</th>
                                                         <td>${face.last_face}</td>
                                                         <td>${face.date}</td>
                                                     </tr>
                                                 `;
-                                                historyTable.innerHTML += row;
-                                            });
-                                        } else {
-                                            historyTable.innerHTML = `
+                                                    historyTable.innerHTML += row;
+                                                });
+                                            } else {
+                                                // Si no hay datos, muestra un mensaje
+                                                historyTable.innerHTML = `
                                                 <tr>
                                                     <td colspan="3" class="text-center">No hay registros en el historial.</td>
                                                 </tr>
                                             `;
-                                        }
-                                    }
+                                            }
+                                            */
 
-                                    // Actualiza el ID del perfil en el contenedor
-                                    const profileContainer = document.getElementById('idProfile');
-                                    if (profileContainer && resp.profile.id) {
-                                        profileContainer.setAttribute('id', `idProfile-${resp.profile.id}`);
-                                        profileContainer.setAttribute('data-id', resp.profile.id);
-                                    }
-                                } else {
-                                    alert(resp.error || 'No se detectaron rostros.');
+                                            // Actualiza el ID del perfil en el contenedor
+                                            const profileContainer = document.getElementById('idProfile');
+                                            if (profileContainer) {
+                                                profileContainer.setAttribute('id', `idProfile-${resp.profile.id}`);
+                                                profileContainer.setAttribute('data-id', resp.profile.id);
+                                            }
+
+                                            const profileImgBase64 = document.getElementById('ProfileImgBase64');
+                                            if (profileImgBase64) {
+                                                if (resp.profile.image_base64) {
+                                                    profileImgBase64.src = `data:image/png;base64,${resp.profile.image_base64}`;
+                                                } else if (resp.profile.image_url) {
+                                                    profileImgBase64.src = resp.profile.image_base64;
+                                                }
+                                            }
+
+
+
+                                        } else {
+                                            // Error en el reconocimiento facial
+                                            loadingSpinner.style.display = 'none';
+                                            document.querySelector('.container').style.display = 'block';
+                                            
+                                            // Mostrar mensaje de error
+                                            const errorMsg = resp.error || 'No se detectaron rostros.';
+                                            alert(`Error en reconocimiento: ${errorMsg}`);
+                                            
+                                            // Si hay información de error de SOAP, mostrarla también
+                                            if (resp.soap_api && resp.soap_api.error) {
+                                                console.error('Error adicional de API SOAP:', resp.soap_api.error);
+                                            }
+                                        }
+                                    }, 3000);
+                                },
+                                error: (err) => {
+                                    console.log('Error en la solicitud AJAX:', err);
+                                },
+                                complete: () => {
+                                    // Ocultar el spinner y mostrar el contenido
+                                    loadingSpinner.style.display = 'none';
+                                    document.querySelector('.container').style.display = 'block';
                                 }
-                            },
-                            error: (err) => {
-                                console.log('Error en la solicitud AJAX:', err);
-                            }
-                        });
-                    };
-                }).catch(error => {
-                    console.log('takePhoto() error: ', error);
+                            });
+                        };
+                    }).catch(error => {
+                        console.log('takePhoto() error: ', error);
+                    });
                 });
+            })
+            .catch(error => {
+                console.log("Something went wrong!", error);
             });
-        })
-        .catch(error => {
-            console.log("Something went wrong!", error);
-        });
     }
-    
+
+    const rut = document.getElementById('Rut').textContent.trim();
+    fetch(`/profile_rut_to_id/${rut}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const profile = data.profile;
+                document.getElementById('Nombre').textContent = `${profile.first_name} ${profile.last_name}`;
+                document.getElementById('Empresa').textContent = profile.transportista;
+                document.getElementById('Rut').textContent = profile.rut;
+                document.getElementById('Email').textContent = profile.email;
+                document.getElementById('Phone').textContent = `0${profile.phone}`;
+                document.getElementById('Status').textContent = profile.status;
+                document.getElementById('Patente').textContent = profile.Patente;
+            }
+        });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+    const videoLandmarks = document.getElementById('video-landmarks');
+    const canvasLandmarks = document.getElementById('canvas-landmarks');
+    const landmarksContainer = document.getElementById('landmarks-container');
+    const scanContainer = document.getElementById('scan-container');
+    const videoScan = document.getElementById('video-scan');
+    const captureBtn = document.getElementById('capture-btn');
+
+    // Inicia cámara para landmarks
+    //const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    //videoLandmarks.srcObject = stream;
+
+    // Espera faceapi y modelos
+    while (typeof faceapi === 'undefined') {
+        await new Promise(r => setTimeout(r, 50));
+    }
+    await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri("{% static 'models/tiny_face_detector' %}"),
+        faceapi.nets.faceLandmark68TinyNet.loadFromUri("{% static 'models/face_landmark_68_tiny' %}")
+    ]);
+
+    videoLandmarks.addEventListener('play', () => {
+        canvasLandmarks.width = videoLandmarks.videoWidth;
+        canvasLandmarks.height = videoLandmarks.videoHeight;
+        const displaySize = { width: videoLandmarks.videoWidth, height: videoLandmarks.videoHeight };
+        setInterval(async () => {
+            const detections = await faceapi.detectAllFaces(videoLandmarks, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks(true);
+            const resizedDetections = faceapi.resizeResults(detections, displaySize);
+            const ctx = canvasLandmarks.getContext('2d');
+            ctx.clearRect(0, 0, canvasLandmarks.width, canvasLandmarks.height);
+            faceapi.draw.drawFaceLandmarks(canvasLandmarks, resizedDetections);
+        }, 100);
+    });
+
+    // Al presionar "Escanear Rostro"
+    captureBtn.addEventListener('click', async () => {
+        // Oculta landmarks, muestra video normal
+        landmarksContainer.style.display = 'none';
+        scanContainer.style.display = 'block';
+        videoScan.srcObject = stream;
+    });
+});
+
+    function typeText(element, text, duration = 5000) {
+        if (!element) return;
+        element.textContent = '';
+        const total = text.length;
+        if (total === 0) return;
+        const interval = duration / total;
+        let i = 0;
+        const timer = setInterval(() => {
+            element.textContent += text[i];
+            i++;
+            if (i >= total) clearInterval(timer);
+        }, interval);
+    }
+
+    // Ejemplo de uso después de obtener los datos del perfil:
+    fetch(`/profile_rut_to_id/${rut}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const profile = data.profile;
+                typeText(document.getElementById('Nombre'), `${profile.first_name} ${profile.last_name}`);
+                typeText(document.getElementById('Empresa'), profile.transportista);
+                typeText(document.getElementById('Rut'), profile.rut);
+                typeText(document.getElementById('Email'), profile.email);
+                typeText(document.getElementById('Phone'), `0${profile.phone}`);
+                typeText(document.getElementById('Status'), profile.status);
+                typeText(document.getElementById('Patente'), profile.Patente);
+            }
+        });
 </script>
+<style>
+    .icon {
+        width: 25px;
+        height: 25px;
+    }
+    #success-animation {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0, 200, 0, 0.85);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.5s;
+        transition: opacity 0.5s;
+        opacity: 1;
+    }
+    #success-animation.hide {
+        opacity: 0;
+        pointer-events: none;
+    }
+    .checkmark-circle {
+        width: 120px;
+        height: 120px;
+        position: relative;
+        margin-bottom: 20px;
+    }
+    .checkmark-circle .background {
+        width: 120px;
+        height: 120px;
+        background: #fff;
+        border-radius: 50%;
+        position: absolute;
+        top: 0; left: 0;
+        box-shadow: 0 0 20px #0f0;
+    }
+    .checkmark {
+        position: absolute;
+        left: 34px;
+        top: 60px;
+        width: 50px;
+        height: 25px;
+        border-left: 8px solid #0f0;
+        border-bottom: 8px solid #0f0;
+        transform: rotate(-45deg);
+        border-radius: 5px;
+        animation: checkmark 0.5s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+    }
+    .success-text {
+        color: #fff;
+        font-size: 2rem;
+        font-weight: bold;
+        text-shadow: 1px 1px 8px #080;
+        margin-top: 10px;
+        text-align: center;
+    }
+    .soap-status {
+        max-width: 80%;
+        word-wrap: break-word;
+        text-align: center;
+    }
+    #soap-status-text {
+        font-size: 1rem;
+        line-height: 1.4;
+        text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+    }
+    @keyframes checkmark {
+        0% { width: 0; height: 0; }
+        50% { width: 50px; height: 0; }
+        100% { width: 50px; height: 25px; }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    /* Estilos para el spinner de carga */
+    #loading-spinner {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.5);
+        z-index: 9998;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .spinner {
+        border: 10px solid #f3f3f3;
+        border-top: 10px solid #007bff;
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg);}
+        100% { transform: rotate(360deg);}
+    }
+    .loading-text {
+        color: #fff;
+        font-size: 1.5rem;
+        margin-top: 20px;
+        font-weight: bold;
+    }
+    .embed-responsive {
+    position: relative;
+}
+    #overlay {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 10;
+    }
+</style>
+
+<!-- Video con landmarks (visible al inicio) -->
+<!-- <div id="landmarks-container" style="display:block; position:relative;">
+    <video id="video-landmarks" autoplay muted style="width:100%;"></video>
+    <canvas id="canvas-landmarks" style="position:absolute; top:0; left:0; z-index:10;"></canvas>
+</div>
+<div id="scan-container" style="display:none;">
+    <video id="video-scan" autoplay muted style="width:100%;"></video>
+</div> -->
 
 {% endblock content %}

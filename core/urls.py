@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path
 from . import views
 
 urlpatterns = [
@@ -18,4 +18,9 @@ urlpatterns = [
     path('reset/', views.reset, name='reset'),
 
     path('profile/<int:profile_id>/details/', views.profile_details, name='profile_details'),
+    path('profile_rut_to_id/<int:rut>/', views.profile_rut_to_id, name='profile_rut_to_id'),
+    
+    # Nueva URL para logs de API SOAP
+    
+    path('soap-logs/', views.soap_logs, name='soap_logs'),
 ]
