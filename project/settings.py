@@ -1,19 +1,20 @@
 from pathlib import Path
 import os
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 #Nuevo
 # Cargar las variables de entorno del archivo .env
-load_dotenv()
+#load_dotenv()
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # Usar las variables de entorno
-SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = os.getenv('DEBUG') == 'True'  # Convierte a booleano
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
+SECRET_KEY = 'ci!=nl9#v4x=ve#$($=!h=bd9t)kl&*1_e)v)^_ln3d2g#pqqj'
+DEBUG = 'True'  # Convierte a booleano
+ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['https://localhost:8000', 'https://66-55-76-180.cloud-xip.com']
+
 
 # Application definition
 
