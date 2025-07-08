@@ -561,7 +561,8 @@ def scan(request):
                         'phone': profile.phone,
                         'transportista': profile.Transportista,
                         'image_base64': profile.image_base64,  # Incluye la imagen base64
-                        'status': profile.status
+                        'status': profile.status,
+                        'Patente': profile.Patente
                     }, 'soap_api': {
                         'estado': soap_response.get('estado', 'UNKNOWN'),
                         'success': soap_response.get('success', False),
@@ -675,6 +676,7 @@ def profile_details(request, profile_id):
 def profile_rut_to_id(request, rut):
     try:
         profile = Profile.objects.get(rut=rut)
+        print(profile.__dict__)
         return JsonResponse({'success': True, 'profile_id': profile.id})
     except Profile.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Profile not found'}, status=404)

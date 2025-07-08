@@ -11,7 +11,8 @@
 <div class="container">
     <div class="text-center">
         <div class="embed-responsive embed-responsive-16by9" style="position:relative;">
-            <video autoplay="true" id="video-element" class="embed-responsive-item" style="border: 2px solid #007bff; border-radius: 8px;"></video>
+            <video autoplay="true" id="video-element" class="embed-responsive-item"
+                style="border: 2px solid #007bff; border-radius: 8px;"></video>
             <canvas id="overlay" style="position:absolute; top:0; left:0; z-index:10;"></canvas>
         </div>
     </div>
@@ -35,13 +36,16 @@
         <div class="col-md-4">
             <div class="profile-img">
                 {% if profile.image_base64 %}
-                    <img src="data:image/png;base64,{{ profile.image_base64 }}" alt="Imagen Base64" style="width: 150px; height: 150px; border-radius: 8px; object-fit: cover; border: 2px solid #007bff;">
+                <img src="data:image/png;base64,{{ profile.image_base64 }}" alt="Imagen Base64"
+                    style="width: 150px; height: 150px; border-radius: 8px; object-fit: cover; border: 2px solid #007bff;">
                 {% elif profile.image %}
-                    <img src="{{ profile.image.url }}" alt="Imagen URL" style="width: 150px; height: 150px; border-radius: 8px; object-fit: cover; border: 2px solid #007bff;">
+                <img src="{{ profile.image.url }}" alt="Imagen URL"
+                    style="width: 150px; height: 150px; border-radius: 8px; object-fit: cover; border: 2px solid #007bff;">
                 {% else %}
-                    <div style="width: 150px; height: 150px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center;">
-                        <span>Sin Imagen</span>
-                    </div>
+                <div
+                    style="width: 150px; height: 150px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center;">
+                    <span>Sin Imagen</span>
+                </div>
                 {% endif %}
             </div>
         </div>
@@ -148,13 +152,15 @@
                             </button>
                         </div>
                     </div>
-<!-- 
+
                     <div class="row">
                         <div class="col-md-4">
                             <label>Patente Tractocamión</label>
                         </div>
                         <div class="col-md-4">
-                            <p id='Patente'>{{ profile.Patente }}</p>
+                            <p id='Patente'>
+                                {{ profile.Patente }}
+                            </p>
                         </div>
                         <div class="col-md-4">
                             <button class="edit-btn">
@@ -162,7 +168,7 @@
                             </button>
                         </div>
                     </div>
-                --> 
+
                 </div>
             </div>
         </div>
@@ -265,17 +271,17 @@
                                             const soapSuccess = resp.soap_api ? resp.soap_api.success : false;
                                             const soapError = resp.soap_api ? resp.soap_api.error : '';
                                             const soapResponse = resp.soap_api ? resp.soap_api.response : '';
-                                            
+
                                             console.log('SOAP API Status:', soapStatus);
                                             console.log('SOAP API Success:', soapSuccess);
                                             console.log('SOAP API Error:', soapError);
                                             console.log('SOAP API Response:', soapResponse);
-                                            
+
                                             // Mostrar animación de éxito y fondo verde
                                             const anim = document.getElementById('success-animation');
                                             const successText = document.querySelector('.success-text');
                                             const soapStatusElement = document.getElementById('soap-status-text');
-                                            
+
                                             // Actualizar el texto según el estado de la API SOAP
                                             if (soapStatus === 'SUCCESS') {
                                                 successText.textContent = '¡Reconocimiento exitoso!';
@@ -295,7 +301,7 @@
                                                 soapStatusElement.style.color = '#fff';
                                                 document.body.style.background = '#f90'; // Color naranja para advertencia
                                             }
-                                            
+
                                             anim.style.display = 'flex';
 
                                             // Hacer scroll cuando la animación ya es visible
@@ -399,11 +405,11 @@
                                             // Error en el reconocimiento facial
                                             loadingSpinner.style.display = 'none';
                                             document.querySelector('.container').style.display = 'block';
-                                            
+
                                             // Mostrar mensaje de error
                                             const errorMsg = resp.error || 'No se detectaron rostros.';
                                             alert(`Error en reconocimiento: ${errorMsg}`);
-                                            
+
                                             // Si hay información de error de SOAP, mostrarla también
                                             if (resp.soap_api && resp.soap_api.error) {
                                                 console.error('Error adicional de API SOAP:', resp.soap_api.error);
@@ -437,6 +443,8 @@
         .then(data => {
             if (data.success) {
                 const profile = data.profile;
+                console.log(profile.first_name)
+                console.log(profile)
                 document.getElementById('Nombre').textContent = `${profile.first_name} ${profile.last_name}`;
                 document.getElementById('Empresa').textContent = profile.transportista;
                 document.getElementById('Rut').textContent = profile.rut;
@@ -448,47 +456,47 @@
         });
 
     document.addEventListener('DOMContentLoaded', async () => {
-    const videoLandmarks = document.getElementById('video-landmarks');
-    const canvasLandmarks = document.getElementById('canvas-landmarks');
-    const landmarksContainer = document.getElementById('landmarks-container');
-    const scanContainer = document.getElementById('scan-container');
-    const videoScan = document.getElementById('video-scan');
-    const captureBtn = document.getElementById('capture-btn');
+        const videoLandmarks = document.getElementById('video-landmarks');
+        const canvasLandmarks = document.getElementById('canvas-landmarks');
+        const landmarksContainer = document.getElementById('landmarks-container');
+        const scanContainer = document.getElementById('scan-container');
+        const videoScan = document.getElementById('video-scan');
+        const captureBtn = document.getElementById('capture-btn');
 
-    // Inicia cámara para landmarks
-    //const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    //videoLandmarks.srcObject = stream;
+        // Inicia cámara para landmarks
+        //const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        //videoLandmarks.srcObject = stream;
 
-    // Espera faceapi y modelos
-    while (typeof faceapi === 'undefined') {
-        await new Promise(r => setTimeout(r, 50));
-    }
-    await Promise.all([
-        faceapi.nets.tinyFaceDetector.loadFromUri("{% static 'models/tiny_face_detector' %}"),
-        faceapi.nets.faceLandmark68TinyNet.loadFromUri("{% static 'models/face_landmark_68_tiny' %}")
-    ]);
+        // Espera faceapi y modelos
+        while (typeof faceapi === 'undefined') {
+            await new Promise(r => setTimeout(r, 50));
+        }
+        await Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri("{% static 'models/tiny_face_detector' %}"),
+            faceapi.nets.faceLandmark68TinyNet.loadFromUri("{% static 'models/face_landmark_68_tiny' %}")
+        ]);
 
-    videoLandmarks.addEventListener('play', () => {
-        canvasLandmarks.width = videoLandmarks.videoWidth;
-        canvasLandmarks.height = videoLandmarks.videoHeight;
-        const displaySize = { width: videoLandmarks.videoWidth, height: videoLandmarks.videoHeight };
-        setInterval(async () => {
-            const detections = await faceapi.detectAllFaces(videoLandmarks, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks(true);
-            const resizedDetections = faceapi.resizeResults(detections, displaySize);
-            const ctx = canvasLandmarks.getContext('2d');
-            ctx.clearRect(0, 0, canvasLandmarks.width, canvasLandmarks.height);
-            faceapi.draw.drawFaceLandmarks(canvasLandmarks, resizedDetections);
-        }, 100);
+        videoLandmarks.addEventListener('play', () => {
+            canvasLandmarks.width = videoLandmarks.videoWidth;
+            canvasLandmarks.height = videoLandmarks.videoHeight;
+            const displaySize = { width: videoLandmarks.videoWidth, height: videoLandmarks.videoHeight };
+            setInterval(async () => {
+                const detections = await faceapi.detectAllFaces(videoLandmarks, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks(true);
+                const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                const ctx = canvasLandmarks.getContext('2d');
+                ctx.clearRect(0, 0, canvasLandmarks.width, canvasLandmarks.height);
+                faceapi.draw.drawFaceLandmarks(canvasLandmarks, resizedDetections);
+            }, 100);
+        });
+
+        // Al presionar "Escanear Rostro"
+        captureBtn.addEventListener('click', async () => {
+            // Oculta landmarks, muestra video normal
+            landmarksContainer.style.display = 'none';
+            scanContainer.style.display = 'block';
+            videoScan.srcObject = stream;
+        });
     });
-
-    // Al presionar "Escanear Rostro"
-    captureBtn.addEventListener('click', async () => {
-        // Oculta landmarks, muestra video normal
-        landmarksContainer.style.display = 'none';
-        scanContainer.style.display = 'block';
-        videoScan.srcObject = stream;
-    });
-});
 
     function typeText(element, text, duration = 5000) {
         if (!element) return;
@@ -525,9 +533,13 @@
         width: 25px;
         height: 25px;
     }
+
     #success-animation {
         position: fixed;
-        top: 0; left: 0; width: 100vw; height: 100vh;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
         background: rgba(0, 200, 0, 0.85);
         z-index: 9999;
         display: flex;
@@ -538,25 +550,30 @@
         transition: opacity 0.5s;
         opacity: 1;
     }
+
     #success-animation.hide {
         opacity: 0;
         pointer-events: none;
     }
+
     .checkmark-circle {
         width: 120px;
         height: 120px;
         position: relative;
         margin-bottom: 20px;
     }
+
     .checkmark-circle .background {
         width: 120px;
         height: 120px;
         background: #fff;
         border-radius: 50%;
         position: absolute;
-        top: 0; left: 0;
+        top: 0;
+        left: 0;
         box-shadow: 0 0 20px #0f0;
     }
+
     .checkmark {
         position: absolute;
         left: 34px;
@@ -569,6 +586,7 @@
         border-radius: 5px;
         animation: checkmark 0.5s cubic-bezier(0.65, 0, 0.45, 1) forwards;
     }
+
     .success-text {
         color: #fff;
         font-size: 2rem;
@@ -577,36 +595,61 @@
         margin-top: 10px;
         text-align: center;
     }
+
     .soap-status {
         max-width: 80%;
         word-wrap: break-word;
         text-align: center;
     }
+
     #soap-status-text {
         font-size: 1rem;
         line-height: 1.4;
-        text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
     }
+
     @keyframes checkmark {
-        0% { width: 0; height: 0; }
-        50% { width: 50px; height: 0; }
-        100% { width: 50px; height: 25px; }
+        0% {
+            width: 0;
+            height: 0;
+        }
+
+        50% {
+            width: 50px;
+            height: 0;
+        }
+
+        100% {
+            width: 50px;
+            height: 25px;
+        }
     }
+
     @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
     }
+
     /* Estilos para el spinner de carga */
     #loading-spinner {
         position: fixed;
-        top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(0,0,0,0.5);
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
         z-index: 9998;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
     }
+
     .spinner {
         border: 10px solid #f3f3f3;
         border-top: 10px solid #007bff;
@@ -615,22 +658,32 @@
         height: 80px;
         animation: spin 1s linear infinite;
     }
+
     @keyframes spin {
-        0% { transform: rotate(0deg);}
-        100% { transform: rotate(360deg);}
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
+
     .loading-text {
         color: #fff;
         font-size: 1.5rem;
         margin-top: 20px;
         font-weight: bold;
     }
+
     .embed-responsive {
-    position: relative;
-}
+        position: relative;
+    }
+
     #overlay {
         position: absolute;
-        top: 0; left: 0;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
         pointer-events: none;
